@@ -67,6 +67,11 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
+        <!-- activiti模块-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-activiti</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
