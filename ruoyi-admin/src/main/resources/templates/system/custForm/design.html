@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:include="include :: header('自定义表单')" />
+    <th:block th:include="include :: select2-css" />
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body{
+            height: 100%;
+        }
+
+        ::-webkit-scrollbar {
+            display: none
+        }
+
+        .ttz-container{
+            height: 100%;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .left{
+            background-color: black;
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            color: white;
+            /* 禁止选中文本 */
+            -moz-user-select: none; /*火狐*/
+            -webkit-user-select: none; /*webkit浏览器*/
+            -ms-user-select: none; /*IE10*/
+            -khtml-user-select: none; /*早期浏览器*/
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        .left .type{
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-bottom: 1px solid #585858;
+        }
+        .item-container{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .item{
+            flex: 0 0 85px;
+            background-color: #292929;
+            margin-top: 6px;
+            padding: 5px;
+            text-align: center;
+            cursor: move;
+        }
+
+        .right{
+            background-color: azure;
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+        }
+
+        .side{
+            border-left: 1px solid #AAAAAA;
+            background-color: white;
+            flex: 0 0 250px;
+            display: flex;
+            flex-direction: column;
+        }
+        #custom-div{
+            padding: 5px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            /* 禁止选中文本 */
+            -moz-user-select: none; /*火狐*/
+            -webkit-user-select: none; /*webkit浏览器*/
+            -ms-user-select: none; /*IE10*/
+            -khtml-user-select: none; /*早期浏览器*/
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        #sid-bnt{
+            text-align: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #aaa;
+        }
+    </style>
+
+    <style>
+
+        .form-list div{
+            min-height: 50px;
+        }
+        .drag-container{
+
+        }
+
+        .drag-container-border{
+            min-height: 50px;
+            border: 1px solid #AAAAAA;
+            padding: 20px;
+        }
+
+    </style>
+
+    <style>
+        .hover{
+            background-color: #0066ff2b;
+        }
+        .selected{
+            background-color: #d6d1ff;
+        }
+        .eidt{
+            color: red;
+        }
+        #drag-tool{
+            display: none;
+            position: absolute;
+            width: 45px;
+        }
+        #drag-tool span{
+            top: 0;
+            font-size: 20px;
+            border-radius: 2px;
+        }
+        #drag-tool span:hover{
+            background-color: #bfbfbf;
+        }
+    </style>
+</head>
+<body>
+<div class="ttz-container">
+    <div class="left">
+        <div class="type">
+            <span>容器</span>
+            <div class="item-container">
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="drag-out-container">外层容器</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="drag-single-container">单列容器</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="drag-two-container">双列容器</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="drag-three-container">三列容器</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="drag-four-container">四列容器</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">xxx</div>
+            </div>
+        </div>
+        <div class="type">
+            <span>表单</span>
+            <div class="item-container">
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-input">输入框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-select">下拉框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-select-mul">多选下拉框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-datetime">时间先择框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-textarea">文本框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-upload">上传附件</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">单选框</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">复选框</div>
+            </div>
+        </div>
+        <div class="type">
+            <span>按钮</span>
+            <div class="item-container">
+                <div class="item" draggable="true" ondragstart="dragstart(event)" data-class="form-buttons">普通</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">点击等待</div>
+                <div class="item" draggable="true" ondragstart="dragstart(event)">贯穿</div>
+            </div>
+        </div>
+        <div class="type">
+            <span>其他</span>
+            <div class="item-container">
+                <div class="item" draggable="true" ondragstart="dragstart(event)">文本</div>
+            </div>
+        </div>
+        <!-- <div class="type">
+            <span>标题</span>
+            <div>
+
+            </div>
+        </div> -->
+    </div>
+    <div class="right" ondrop="drop(event)" ondragenter="dragenter(event)" ondragover="dragover(event)" ondragleave="dragleave(event)">
+
+    </div>
+    <div class="side">
+        <div id="sid-bnt">
+            <button id="show-bnt" type="button" class="btn btn-w-m btn-success" onclick="preview(this)">预览</button>
+            <button id="save-bnt" type="button" class="btn btn-w-m btn-primary" onclick="save()">保存</button>
+        </div>
+        <div id="custom-div">
+
+        </div>
+    </div>
+</div>
+
+<div id="drag-tool">
+    <span id="bnt-deploy" class="glyphicon glyphicon-cog"></span>
+    <span id="bnt-remove" class="glyphicon glyphicon-remove-circle"></span>
+</div>
+
+<div id="form-list" style="display: none;">
+    <th:block th:include="system/custForm/templates/container :: container" />
+    <th:block th:include="system/custForm/templates/input :: input" />
+    <th:block th:include="system/custForm/templates/select :: select" />
+    <th:block th:include="system/custForm/templates/select-mul :: select_mul" />
+    <th:block th:include="system/custForm/templates/datetime :: datetime" />
+    <th:block th:include="system/custForm/templates/textarea :: textarea" />
+    <th:block th:include="system/custForm/templates/upload :: upload" />
+    <th:block th:include="system/custForm/templates/buttons :: buttons" />
+</div>
+</body>
+
+<th:block th:include="include :: footer" />
+<th:block th:include="include :: select2-js" />
+<script th:src="@{/js/jquery-ui-1.10.4.min.js}"></script>
+<th:block th:include="include :: datetimepicker-js" />
+<script>
+    var laydate;
+
+    $(function(){
+        layui.use('laydate', function() {
+            laydate = layui.laydate;
+        });
+
+        $(document).click(function(){
+            $(".drag-box").removeClass("selected");
+            $("#drag-tool").hide();
+        });
+
+        $("#bnt-deploy").click(function(){
+            event.stopPropagation();
+            //获得点击的drag-box的id
+            var selectedId = this.dataset.selectedId;
+            //获得这是哪种输入域
+            var type = this.dataset.selectedType;
+            if(type){
+                var obj = eval(type);
+                if(obj){
+
+                    obj = merge(obj, $("#"+selectedId));
+                    var str = getHtml(obj, selectedId);
+                    $("#custom-div").html(str);
+
+                    $(".drag-item").removeClass("eidt");
+                    $("#"+selectedId).addClass("eidt");
+                }
+            }
+        });
+
+        $("#bnt-remove").click(function(){
+            var selectedId = this.dataset.selectedId;
+            $("#drag-tool").hide();
+            $("#"+selectedId).remove();
+        });
+
+        $(".right").on("click", ".drag-box", function(event){
+            event.stopPropagation();
+            $(".drag-box").removeClass("selected");
+            var dragBox = $(this);
+            dragBox.addClass("selected");
+            var left = dragBox.offset().left;
+            var top = dragBox.offset().top;
+            var selectedId = dragBox.attr("id");
+            //定位
+            $("#drag-tool").css({"left":left+"px", "top":top+"px"}).show();
+            //绑定选中box的id
+            var bntTools = $("#drag-tool>span");
+            for(var i=0 ; i<bntTools.length ; i++){
+                bntTools[i].dataset.selectedId = selectedId;
+                bntTools[i].dataset.selectedType = dragBox[0].dataset.type;
+            }
+        });
+    })
+
+    /*function selectDragBox(obj, event){
+        event.stopPropagation();
+        $(".drag-box").removeClass("selected");
+        var dragBox = $(obj);
+        dragBox.addClass("selected");
+        var left = dragBox.offset().left;
+        var top = dragBox.offset().top;
+        var selectedId = dragBox.attr("id");
+        //定位
+        $("#drag-tool").css({"left":left+"px", "top":top+"px"}).show();
+        //绑定选中box的id
+        var bntTools = $("#drag-tool>span");
+        for(var i=0 ; i<bntTools.length ; i++){
+            bntTools[i].dataset.selectedId = selectedId;
+        }
+    }*/
+
+    function dragstart(ev){
+        console.log("开始拖动");
+        ev.dataTransfer.setData("class", ev.target.dataset.class);
+    }
+
+    function drop(ev){
+        console.log("ondrop");
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("class");
+        var id = getDateTime();
+        var realId = "real"+id;
+        var item = $($("."+data).html().replaceAll("select-ttz", "select")).attr("id", id);
+        item.find(".real").attr("id", realId);
+        $(ev.target).removeClass("hover");
+        $(ev.target).append(item);
+        if(data == "form-select" || data == "form-select-mul"){
+            item.find("select").select2();
+        } else if(data == "form-datetime"){
+            laydate.render({
+                elem: '#'+realId,
+                type: 'datetime',
+                trigger: 'click'
+            });
+        }
+    }
+
+    function dragenter(ev){
+        console.log("dragenter");
+        $(ev.target).addClass("hover");
+        ev.preventDefault();
+
+    }
+
+    function dragover(ev){
+        console.log("dragover");
+        ev.preventDefault();
+
+    }
+
+    function dragleave(ev){
+        console.log("dragleave");
+        ev.preventDefault();
+        $(ev.target).removeClass("hover");
+    }
+
+    function getDateTime() {
+        return Date.parse(new Date());
+    }
+
+    function preview(obj){
+        var text = $(obj).text();
+        if(text == "预览"){
+            $(".drag-container").removeClass("drag-container-border");
+            $(obj).text("还原");
+        } else {
+            $(".drag-container").addClass("drag-container-border");
+            $(obj).text("预览");
+        }
+    }
+
+    function save(){
+        $.modal.openOptions({
+            url: "/custForm/form/addForm",
+            title: "书籍详情",
+            btn: ['<i class="fa fa-check"></i> 确认', '<i class="fa fa-close"></i> 关闭'],
+            callBack: function(index, layero){
+
+                var iframeWin = layero.find('iframe')[0];
+                iframeWin.contentWindow.submitHandler($(".right").html());
+
+            }
+        })
+    }
+
+    //将现有属性合并到obj对象中
+    function merge(obj, selected){
+        for (prop in obj){
+            if(prop == "tab"){
+                obj[prop].value = selected.find("label").text() ? selected.find("label").text() : "";
+            } else if(prop == "dict"){
+                obj[prop].value = selected.find(".real")[0].dataset.dict ? selected.find(".real")[0].dataset.dict : "";
+            } else {
+                obj[prop].value = selected.find(".real").attr(prop) ? selected.find(".real").attr(prop) : "";
+            }
+        }
+        return obj;
+    }
+
+    //渲染右侧设置页
+    function getHtml(obj, selectedId){
+        var str = "";
+        for (prop in obj) {
+
+            str += `
+					<div class="" style="display: flex;align-items: baseline;padding-left: 10px;margin-bottom: 10px;">
+						<label class="control-label" style="width: 55px;text-align: right;">`+obj[prop].name+`</label>
+						<div style="flex: 1;margin-left: 10px;">
+							<input type="text" placeholder="" value="`+obj[prop].value+`" class="form-control custom-attribute" data-attribute="`+prop+`">
+						</div>
+					</div>
+				`;
+        }
+        str += `<div>
+						<button id="show-bnt" type="button" class="btn btn-block btn-outline btn-primary" data-selected-id="`+selectedId+`" onclick="saveDragReal(this)">保存</button>
+					</div>`
+        return str;
+    }
+
+    function saveDragReal(obj){
+        debugger;
+        var selectedId = obj.dataset.selectedId;
+        var arr = $(".custom-attribute");
+        for(var i=0 ; i<arr.length ; i++){
+            var attribute = arr[i].dataset.attribute;
+            var val = $(arr[i]).val();
+
+            var selectDragBox = $("#"+selectedId);
+            if(attribute == "tab"){
+                selectDragBox.find("label").text(val);
+            } else if(attribute == "dict") {
+                if(val){
+                    selectDragBox.find("select").select2('destroy').empty();
+                    selectDragBox.find("select")[0].dataset.dict = val;
+                    $.ajax({
+                        url: "/custForm/form/getType",
+                        type: "post",
+                        data: {
+                            dictType: val
+                        },
+                        success: function(res){
+                            if(res && res.length>0){
+                                var classdata = [{"id": "", "text": "--请选择--"}];
+                                for(var i=0 ; i<res.length ; i++){
+                                    classdata.push({"id": res[i].dictValue, "text": res[i].dictLabel});
+                                }
+                                selectDragBox.find("select").select2({
+                                    data: classdata
+                                });
+                            }
+                        }
+                    });
+                }
+            } else {
+                selectDragBox.find(".real").attr(attribute, val);
+            }
+        }
+        $("#"+selectedId).removeClass("eidt");
+        $("#custom-div").html("");
+    }
+</script>
+</html>

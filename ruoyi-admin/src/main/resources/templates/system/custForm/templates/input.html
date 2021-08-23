@@ -1,0 +1,19 @@
+<div th:fragment="input">
+    <div class="form-input">
+        <div class="drag-box drag-item form-group" data-type="drag_input" style="display: flex;align-items: baseline;padding-left: 10px;">
+            <label class="control-label" style="width: 80px;text-align: right;">组件名：</label>
+            <div style="flex: 1;">
+                <input type="text" placeholder="组件名" class="form-control real">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var drag_input = {
+            tab: {name: "描述", value: "组件名"},
+            type: {name: "类型", value: "text"},
+            placeholder: {name: "默认内容", value: "组件名"},
+            name: {name: "提交属性", value: ""}
+        }
+    </script>
+</div>

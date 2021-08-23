@@ -1,0 +1,19 @@
+<div th:fragment="datetime">
+    <div class="form-datetime">
+        <div class="drag-box drag-item form-group" data-type="drag_datetime" style="display: flex;padding-left: 10px;">
+            <label class="control-label" style="flex: 0 1 80px;text-align: right;padding-top: 8px;">组件名：</label>
+            <div class="input-group date" style="flex: 1;">
+                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                <input type="text" class="form-control real" id="laydate-demo-3" placeholder="yyyy-MM-dd HH:mm:ss">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var drag_datetime = {
+            tab: {name: "描述", value: "组件名"},
+            placeholder: {name: "默认内容", value: "组件名"},
+            name: {name: "提交属性", value: ""}
+        }
+    </script>
+</div>

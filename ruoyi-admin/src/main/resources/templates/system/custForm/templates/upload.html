@@ -1,0 +1,17 @@
+<div th:fragment="upload">
+    <div class="form-upload">
+        <div class="drag-box drag-item form-group" data-type="drag_upload" style="display: flex;align-items: baseline;padding-left: 10px;">
+            <label class="control-label" style="width: 80px;text-align: right;">组件名：</label>
+            <div style="flex: 1;">
+                <input type="file" name="" class="real">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var drag_upload = {
+            tab: {name: "描述", value: "组件名"},
+            name: {name: "提交属性", value: ""}
+        }
+    </script>
+</div>

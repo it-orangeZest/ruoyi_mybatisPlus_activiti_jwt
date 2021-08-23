@@ -1,0 +1,23 @@
+<div th:fragment="select_mul">
+    <div class="form-select-mul">
+        <div class="drag-box drag-item form-group" data-type="drag_select_mul" style="display: flex;padding-left: 10px;">
+            <label class="control-label" style="width: 80px;text-align: right;padding-top: 8px;">组件名：</label>
+            <div style="flex: 1;">
+                <select-ttz class="form-control real select2-multiple" multiple>
+                    <option value="">--请选择--</option>
+                    <option value="Java">示例一</option>
+                    <option value="PHP">示例二</option>
+                    <option value=".NET">示例三</option>
+                </select-ttz>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var drag_select_mul = {
+            "tab": {name: "描述", value: "组件名"},
+            "dict": {name: "下拉参数", value: ""},
+            "name": {name: "提交属性", value: ""}
+        }
+    </script>
+</div>
