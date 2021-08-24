@@ -191,13 +191,13 @@
             </div>
         </div> -->
     </div>
-    <div class="right" ondrop="drop(event)" ondragenter="dragenter(event)" ondragover="dragover(event)" ondragleave="dragleave(event)">
+    <div class="right" ondrop="drop(event)" ondragenter="dragenter(event)" ondragover="dragover(event)" ondragleave="dragleave(event)" th:utext="${custForm.content}">
 
     </div>
     <div class="side">
         <div id="sid-bnt">
             <button id="show-bnt" type="button" class="btn btn-w-m btn-success" onclick="preview(this)">预览</button>
-            <button id="save-bnt" type="button" class="btn btn-w-m btn-primary" onclick="save()">保存</button>
+            <button id="save-bnt" type="button" class="btn btn-w-m btn-primary" onclick="save()">提交设计</button>
         </div>
         <div id="custom-div">
 
@@ -228,8 +228,12 @@
 <th:block th:include="include :: datetimepicker-js" />
 <script>
     var laydate;
+    var id = [[${custForm.id}]];
 
     $(function(){
+
+        initSelect2();
+
         layui.use('laydate', function() {
             laydate = layui.laydate;
         });
@@ -362,17 +366,31 @@
     }
 
     function save(){
-        $.modal.openOptions({
-            url: "/custForm/form/addForm",
-            title: "书籍详情",
-            btn: ['<i class="fa fa-check"></i> 确认', '<i class="fa fa-close"></i> 关闭'],
-            callBack: function(index, layero){
+        var encode = encodeURIComponent($(".right").html());
+        $.ajax({
+            url: "/custForm/form/saveDesign",
+            type: "post",
+            data: {
+                id: id,
+                content: encode
+            },
+            success: function(res){
+                debugger;
+                console.log(res);
+                var parent = window.parent;
+                if(res.code == 0){
+                    $.modal.closeTab()
+                    parent.$.modal.msgSuccess("保存成功");
+                } else {
+                    parent.$.modal.msgSuccess("保存失败，请排查");
+                }
 
-                var iframeWin = layero.find('iframe')[0];
-                iframeWin.contentWindow.submitHandler($(".right").html());
-
+            },
+            error: function(res) {
+                var parent = window.parent;
+                parent.$.modal.msgSuccess(res.msg);
             }
-        })
+        });
     }
 
     //将现有属性合并到obj对象中
@@ -449,6 +467,17 @@
         }
         $("#"+selectedId).removeClass("eidt");
         $("#custom-div").html("");
+    }
+
+    function initSelect2(){
+        debugger;
+        $(".right .select2").remove();
+        $(".right .drag-item select").removeClass("select2-hidden-accessible");
+        $(".right .drag-item select").removeAttr("data-select2-id");
+        $(".right .drag-item select").removeAttr("tabindex");
+        $(".right .drag-item select").removeAttr("aria-hidden");
+        $(".right .drag-item select option").removeAttr("data-select2-id");
+        $(".right .drag-item select").select2();
     }
 </script>
 </html>

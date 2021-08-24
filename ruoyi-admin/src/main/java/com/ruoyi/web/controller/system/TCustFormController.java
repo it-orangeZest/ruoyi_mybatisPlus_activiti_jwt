@@ -16,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -128,9 +130,9 @@ public class TCustFormController extends BaseController
     }
 
     @GetMapping("/design")
-    public String design(ModelMap mmap){
-        TCustForm tCustForm = new TCustForm();
-        mmap.put("customForm", tCustForm);
+    public String design(String id, ModelMap mmap){
+        TCustForm tCustForm = this.tCustFormService.getById(id);
+        mmap.put("custForm", tCustForm);
         return prefix + "/design";
     }
 
@@ -140,4 +142,23 @@ public class TCustFormController extends BaseController
     {
         return dictService.getType(dictType);
     }
+
+    @ResponseBody()
+    @RequestMapping("/saveDesign")
+    public AjaxResult saveDesign(TCustForm tCustForm){
+        try {
+            String decode = URLDecoder.decode(tCustForm.getContent(), "UTF-8");
+            tCustForm.setContent(decode);
+            boolean b = this.tCustFormService.updateById(tCustForm);
+            if(b){
+                return AjaxResult.success();
+            } else {
+                return AjaxResult.error();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error("系统异常：" + e.getMessage());
+        }
+    }
+
 }
