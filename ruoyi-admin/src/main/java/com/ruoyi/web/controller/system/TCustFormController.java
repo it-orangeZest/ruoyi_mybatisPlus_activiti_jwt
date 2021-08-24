@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -136,6 +137,13 @@ public class TCustFormController extends BaseController
         return prefix + "/design";
     }
 
+    @GetMapping("/designFromDefinition")
+    public String designFromDefinition(String windowName, ModelMap mmap){
+
+        mmap.put("windowName", windowName);
+        return prefix + "/design_from_definition";
+    }
+
     @ResponseBody()
     @RequestMapping("/getType")
     public List<SysDictData> getType(String dictType)
@@ -161,4 +169,19 @@ public class TCustFormController extends BaseController
         }
     }
 
+    @ResponseBody()
+    @GetMapping("/getFormByStatus")
+    public List<TCustForm> getFormByStatus(String status){
+        QueryWrapper<TCustForm> wrapper = new QueryWrapper<>();
+        wrapper.eq("status", status);
+        List<TCustForm> list = this.tCustFormService.list(wrapper);
+        return list;
+    }
+
+
+    @ResponseBody()
+    @GetMapping("/getFormById")
+    public TCustForm getFormById(String id){
+        return this.tCustFormService.getById(id);
+    }
 }

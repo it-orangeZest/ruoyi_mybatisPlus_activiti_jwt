@@ -55,6 +55,28 @@
                 $.operate.save(prefix + "/add", $('#form-form-add').serialize());
             }
         }
+
+        function submitHandlerFromDefinition(windowName, content) {
+            debugger;
+            if ($.validate.form()) {
+                var encode = encodeURIComponent(content);
+                console.log($('#form-form-add').serialize());
+                $.operate.save(prefix + "/add", $('#form-form-add').serialize()+"&content="+encode, function(res){
+                    if(res.code == 0){
+                        window.parent.parent.$.modal.msgSuccess("创建成功");
+                        for(var i=0 ; i<window.parent.parent.length ; i++){
+                            if(window.parent.parent[i].name == windowName){
+                                window.parent.parent[i].resetSelect2();
+                            }
+                        }
+                        $.modal.close();
+                        window.parent.$.modal.closeTab();
+                    } else {
+                        window.parent.parent.$.modal.msgSuccess("创建失败！");
+                    }
+                });
+            }
+        }
     </script>
 </body>
 </html>

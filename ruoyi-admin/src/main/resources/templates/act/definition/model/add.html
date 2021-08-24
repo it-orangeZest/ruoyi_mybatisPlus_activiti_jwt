@@ -64,23 +64,27 @@
                                             </div>
                                             <div class="ibox-content">
                                                 <div class="form-group">
-                                                    <label class="col-sm-1 control-label">表单：</label>
+                                                    <label class="col-sm-1 control-label" style="width: 104px;text-align: right;padding-right: 0px;">表单：</label>
 
-                                                    <div class="col-sm-5">
-                                                        <select class="form-control">
-                                                            <option value="">--请选择开发语言--</option>
-                                                            <option value="Java">Java</option>
-                                                            <option value="PHP">PHP</option>
-                                                            <option value=".NET">.NET</option>
+                                                    <div class="col-sm-5" style="padding-left: 0px;">
+                                                        <select id="form_select" class="form-control" onchange="showForm()" required>
+
                                                         </select>
                                                     </div>
+                                                    <div class="col-sm-5" style="color: #0064b6; padding: 7px 0; cursor: pointer;" onclick="openDesignTab()">没有想要的表单？点击去设计</div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div>表单预览</div>
-                                        <div class="form-group">
-                                        </div>
                                     </form>
+                                        <div class="ibox">
+                                            <div class="ibox-title">
+                                                <h5>表单预览</h5>
+                                            </div>
+                                            <div class="ibox-content">
+                                                <div id="form_show" style="min-height: 300px;"></div>
+                                            </div>
+                                        </div>
+
                                 </div>
                             </div>
                             <div id="step-2" class="tab-pane" role="tabpanel" aria-labelledby="step-2">
@@ -182,6 +186,10 @@
                 toolbarExtraButtons: [btnCancel,btnPrev,btnNext,btnFinish]// 扩展的按钮集合
             }
         });
+
+        initSelect();
+
+
     });
 
     function submit(){
@@ -237,7 +245,43 @@
         return true;
     });
 
+    function initSelect(){
+        $.ajax({
+            url: "/custForm/form/getFormByStatus?status=0",
+            type: "GET",
+            success: function(res){
+                debugger;
+                var data = [{"id": "", "text": "--请选择--"}];
+                for(var i=0 ; i<res.length ; i++){
+                    data.push({"id": res[i].id, "text": res[i].formName});
+                }
+                $("#form_select").select2({
+                    data: data
+                });
+            }
+        })
+    }
 
+    function showForm(){
+        debugger;
+        var id = $("#form_select").select2("val");
+        $.ajax({
+            url: "/custForm/form/getFormById?id="+id,
+            type: "GET",
+            success: function(res){
+                $("#form_show").html(res.content);
+            }
+        })
+    }
+
+    function openDesignTab(){
+        $.modal.openTab("表单编辑页", prefix + "/designFromDefinition?windowName="+window.name);
+    }
+
+    function resetSelect2(){
+        $("#form_select").select2('destroy').empty();
+        initSelect();
+    }
 </script>
 </body>
 </html>
