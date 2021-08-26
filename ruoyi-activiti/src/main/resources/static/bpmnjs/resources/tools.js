@@ -96,13 +96,14 @@ saveBpmn() {
 },
 saveBpmnModel(formData, bpmnModeler) {
     debugger;
+    window.parent.$.modal.loading("正在保存");
     bpmnModeler.saveXML({ format: true }, function (err, xml) {
         if (err) {
             return console.error('保存失败，请重试', err);
         }
         console.log(xml)
 
-        formData[values] = xml;
+        formData.values = xml;
 
         debugger;
         $.ajax({
@@ -111,20 +112,22 @@ saveBpmnModel(formData, bpmnModeler) {
             dataType:"json",
             data: formData,
             success: function (result) {
-                if(result.msg=='成功'){
+                window.parent.$.modal.closeLoading();
+                if(result.code == 0){
                     tools.syhide('alert')
-                    alert('保存成功')
+                    closeAndRefreshParent();
                 }else{
-                    alert(result.msg)
+                    alert("保存失败")
                 }
             },
             error: function (err) {
-                console.log(err)
+                window.parent.$.modal.closeLoading();
+                alert(err)
             }
         })
 
 
-        $.ajax({
+        /*$.ajax({
             url: publicurl+'act_model/'+modelId+'/save',
             type: 'POST',
             dataType:"json",
@@ -141,7 +144,7 @@ saveBpmnModel(formData, bpmnModeler) {
             error: function (err) {
                 console.log(err)
             }
-        });
+        });*/
     });
 },
 /**

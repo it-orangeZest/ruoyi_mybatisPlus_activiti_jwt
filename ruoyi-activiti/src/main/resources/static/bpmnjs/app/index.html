@@ -91,7 +91,7 @@
         部署
       </a>
     </li>-->
-    <li class="item save">
+    <li class="item save" style="display: none">
       <a class="btn" href="javascript:void(0);" id="saveBpmnModel">保存</a>
     </li>
   </ul>
@@ -99,6 +99,19 @@
   <script src="./index.js"></script>
   <script>
     var formData = {};
+
+    function closeAndRefreshParent(){
+      debugger;
+      window.parent.parent.$.modal.msgSuccess("创建成功！");
+      let parentTabe = window.parent.parentTabe;
+      for(var i=0 ; i<window.parent.parent.length ; i++){
+        if(window.parent.parent[i].name == parentTabe){
+          window.parent.parent[i].$.table.refresh();
+        }
+      }
+
+      window.parent.$.modal.closeTab();
+    }
   </script>
 </body>
 </html>

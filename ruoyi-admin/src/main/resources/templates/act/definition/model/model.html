@@ -126,7 +126,8 @@
         });
 
         function openDesignTab(){
-            $.modal.openTab("流程模型设计", prefix + "/add");
+            let windowName = window.name;
+            $.modal.openTab("流程模型设计", prefix + "/add?windowName="+windowName);
         }
     </script>
 </body>

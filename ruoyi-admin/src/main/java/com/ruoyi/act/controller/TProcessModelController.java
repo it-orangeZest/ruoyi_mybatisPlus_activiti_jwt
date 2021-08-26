@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.ruoyi.act.api.ProcessDefinitionService;
+import com.ruoyi.common.utils.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -77,8 +78,9 @@ public class TProcessModelController extends BaseController
      * 新增流程模型
      */
     @GetMapping("/add")
-    public String add()
+    public String add(String windowName, ModelMap mmap)
     {
+        mmap.put("windowName", windowName);
         return prefix + "/add";
     }
 
@@ -144,9 +146,23 @@ public class TProcessModelController extends BaseController
 
     @ResponseBody
     @PostMapping(value = "/save")
-    public AjaxResult save(@RequestParam("name") String name, @RequestParam("key") String key,
-                           @RequestParam(value = "description", required = false) String description,
-                           @RequestParam("name") String values){
-        return null;
+    public AjaxResult save(String name, String key, Long formId,
+                           String description, Long deptId, String status,
+                           String values){
+
+        boolean save = false;
+        String modelId = this.processDefinitionService.saveModel(name, key, description, values);
+        if(StringUtils.isNotBlank(modelId)){
+            TProcessModel tProcessModel = new TProcessModel();
+            tProcessModel.setDeptId(deptId);
+            tProcessModel.setFormId(formId);
+            tProcessModel.setName(name);
+            tProcessModel.setProcessKey(key);
+            tProcessModel.setStatus(status);
+            tProcessModel.setModelId(modelId);
+            tProcessModel.setRemark(description);
+            save = this.tProcessModelService.save(tProcessModel);
+        }
+        return save ? AjaxResult.success() : AjaxResult.error();
     }
 }

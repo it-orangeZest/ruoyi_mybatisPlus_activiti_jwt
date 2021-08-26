@@ -47,6 +47,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="#step-2"> 第二步：设计流程 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#step-3"> 第三步：填写流程模型信息 </a>
+                            </li>
                         </ul>
                         <div class="tab-content">
                             <div id="step-1" class="tab-pane" role="tabpanel" aria-labelledby="step-1">
@@ -61,7 +64,7 @@
                                                     <label class="col-sm-1 control-label" style="width: 104px;text-align: right;padding-right: 0px;">表单：</label>
 
                                                     <div class="col-sm-5" style="padding-left: 0px;">
-                                                        <select id="form_select" class="form-control" onchange="showForm()" required>
+                                                        <select id="form_select" name="formId" class="form-control" onchange="showForm()" required>
 
                                                         </select>
                                                     </div>
@@ -86,6 +89,47 @@
                                     <iframe id="bpmnIframe" src="/bpmnjs/dist/index.html?type=addBpmn" style="width: 100%; height: 620px; border: 0;"></iframe>
                                 </div>
                             </div>
+                            <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
+                                <div>
+                                    <form class="form form-horizontal m-t">
+                                        <div class="ibox">
+                                            <div class="ibox-title">
+                                                <h5>流程模型信息</h5>
+                                            </div>
+                                            <div class="ibox-content">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" >流程key：</label>
+
+                                                    <div class="col-sm-8" >
+                                                        <input type="text" name="key" placeholder="流程key" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" >流程名称：</label>
+
+                                                    <div class="col-sm-8" >
+                                                        <input type="text" name="name" placeholder="流程名称" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" >所属部门：</label>
+
+                                                    <div class="col-sm-8" >
+                                                        <input type="text" name="deptId" placeholder="所属部门" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" >描述：</label>
+
+                                                    <div class="col-sm-8" >
+                                                        <textarea name="description" class="form-control real"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -98,7 +142,8 @@
 <th:block th:include="include :: jquery-smartwizard-js" />
 <th:block th:include="include :: select2-js" />
 <script th:inline="javascript">
-    var prefix = ctx + "act/definition/model"
+    var prefix = ctx + "act/definition/model";
+    var parentTabe = [[${windowName}]];
     $("#form-form-add").validate({
         focusCleanup: true
     });
@@ -159,8 +204,8 @@
                 }
             });
         });
-        alert(JSON.stringify(data));
-        $("#bpmnIframe")[0].contentWindow.save(data);
+        $("#bpmnIframe")[0].contentWindow.formData = data;
+        $("#bpmnIframe")[0].contentWindow.document.getElementById("saveBpmnModel").click()
     }
     // 显示步骤时将触发事件
     $("#smartwizard").on("showStep", function(e, anchorObject, stepNumber, stepDirection, stepPosition) {
@@ -231,7 +276,7 @@
     }
 
     function openDesignTab(){
-        $.modal.openTab("表单编辑页", prefix + "/designFromDefinition?windowName="+window.name);
+        $.modal.openTab("表单编辑页", "/custForm/form/designFromDefinition?windowName="+window.name);
     }
 
     function resetSelect2(){

@@ -38,6 +38,8 @@ public class TProcessModel extends MPBaseEntity
     @Excel(name = "状态")
     private String status;
 
+    private String modelId;
+
     public void setId(Long id) 
     {
         this.id = id;
@@ -93,20 +95,24 @@ public class TProcessModel extends MPBaseEntity
         return status;
     }
 
+    public String getModelId() {
+        return modelId;
+    }
+
+    public void setModelId(String modelId) {
+        this.modelId = modelId;
+    }
+
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("id", getId())
-            .append("processKey", getProcessKey())
-            .append("deptId", getDeptId())
-            .append("name", getName())
-            .append("formId", getFormId())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .append("status", getStatus())
-            .append("remark", getRemark())
-            .toString();
+        return "TProcessModel{" +
+                "id=" + id +
+                ", processKey='" + processKey + '\'' +
+                ", deptId=" + deptId +
+                ", name='" + name + '\'' +
+                ", formId=" + formId +
+                ", status='" + status + '\'' +
+                ", modelId='" + modelId + '\'' +
+                '}';
     }
 }
