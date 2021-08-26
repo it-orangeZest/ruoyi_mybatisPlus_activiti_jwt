@@ -65,7 +65,7 @@ setColor(json,bpmnModeler) {
  * 保存bpmn对象
  * @param {object} bpmnModeler bpmn对象
  */
-saveBpmn(bpmnModeler) {
+saveBpmn() {
     bpmnModeler.saveXML({ format: true }, function (err, xml) {
         if (err) {
             return console.error('保存失败，请重试', err);
@@ -94,15 +94,36 @@ saveBpmn(bpmnModeler) {
         });
     });
 },
-saveBpmnModel(bpmnModeler, modelId) {
+saveBpmnModel(formData, bpmnModeler) {
+    debugger;
     bpmnModeler.saveXML({ format: true }, function (err, xml) {
         if (err) {
             return console.error('保存失败，请重试', err);
         }
         console.log(xml)
-        var param={
-            "values":xml
-        }
+
+        formData[values] = xml;
+
+        debugger;
+        $.ajax({
+            url: publicurl + "act/definition/model/save",
+            type: "post",
+            dataType:"json",
+            data: formData,
+            success: function (result) {
+                if(result.msg=='成功'){
+                    tools.syhide('alert')
+                    alert('保存成功')
+                }else{
+                    alert(result.msg)
+                }
+            },
+            error: function (err) {
+                console.log(err)
+            }
+        })
+
+
         $.ajax({
             url: publicurl+'act_model/'+modelId+'/save',
             type: 'POST',
@@ -161,11 +182,12 @@ setEncoded(link, name, data) {
  */
 upload(bpmnModeler, container) {
     console.log(222);
+    debugger;
     var FileUpload = document.myForm.uploadFile.files[0];
     var fm = new FormData();
     fm.append('processFile', FileUpload);
     $.ajax({
-        url: publicurl+'processDefinition/upload',
+        url: publicurl+'act/definition/model/upload',
         type: 'POST',
         data: fm,
         async: false,
@@ -187,6 +209,7 @@ upload(bpmnModeler, container) {
  * @param {string} url url地址
  */
 openFromUrl(bpmnModeler, container, url) {
+    debugger;
     $.ajax(url, { dataType: 'text' }).done(async function (xml) {
         try {
             await bpmnModeler.importXML(xml);

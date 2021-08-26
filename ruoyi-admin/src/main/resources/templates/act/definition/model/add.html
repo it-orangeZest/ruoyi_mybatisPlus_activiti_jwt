@@ -42,16 +42,10 @@
                         </h2>
                         <ul class="nav">
                             <li class="nav-item">
-                                <a class="nav-link" href="#step-1"> 流程发起表单 </a>
+                                <a class="nav-link" href="#step-1"> 第一步：选择流程发起表单 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#step-2"> 设计流程 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#step-3"> 第三步 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#step-4"> 第四步 </a>
+                                <a class="nav-link" href="#step-2"> 第二步：设计流程 </a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -89,22 +83,7 @@
                             </div>
                             <div id="step-2" class="tab-pane" role="tabpanel" aria-labelledby="step-2">
                                 <div>
-                                    <iframe src="/bpmnjs/dist/index.html" style="width: 100%; height: 623px; border: 0;"></iframe>
-                                </div>
-                            </div>
-                            <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
-                                <div class="m-t-md">
-                                    <p>1、如果需要工具栏在页面底部显示, 将style中下面的部分取消注释<blockquote>.sw>.toolbar-bottom </blockquote></p>
-                                    <p>2、如果设置了自动调节高度为false, 将style中下面的部分取消注释<blockquote>.sw>.tab-content </blockquote></p>
-                                    <p>3、工具栏的按钮样式会被表单插件中.btn样式覆盖导致bootstrap中的按钮样式无效, 如果需要改变按钮样式可以自己定义并提高优先级</blockquote></p>
-                                </div>
-                            </div>
-                            <div id="step-4" class="tab-pane" role="tabpanel" aria-labelledby="step-4">
-                                <div class="m-t-md">
-                                    <h3>测试多行显示</h3>
-                                    <pre style="overflow-x: hidden;">
-
-                                    </pre>
+                                    <iframe id="bpmnIframe" src="/bpmnjs/dist/index.html?type=addBpmn" style="width: 100%; height: 620px; border: 0;"></iframe>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +98,7 @@
 <th:block th:include="include :: jquery-smartwizard-js" />
 <th:block th:include="include :: select2-js" />
 <script th:inline="javascript">
-    var prefix = ctx + "custForm/form"
+    var prefix = ctx + "act/definition/model"
     $("#form-form-add").validate({
         focusCleanup: true
     });
@@ -135,7 +114,7 @@
 
     $(document).ready(function() {
         // 工具栏按钮
-        var btnFinish = $('<a id="btn-finish"></a>').text('完成')
+        var btnFinish = $('<a id="btn-finish"></a>').text('保存')
             .addClass('btn btn-info')
             .on('click', function(){ submit(); });
         var btnCancel = $('<a id="btn-cancel"></a>').text('取消')
@@ -159,7 +138,7 @@
             toolbarSettings: {
                 showNextButton: false,// 因为上面自定义了下一步按钮, 所以隐藏掉插件自带的按钮, 如果不使用自定义按钮, 需要改为true或者去掉该属性
                 showPreviousButton: false,// 因为上面自定义了上一步按钮, 所以隐藏掉插件自带的按钮, 如果不使用自定义按钮, 需要改为true或者去掉该属性
-                toolbarExtraButtons: [btnCancel,btnPrev,btnNext,btnFinish]// 扩展的按钮集合
+                toolbarExtraButtons: [btnPrev,btnNext,btnFinish]// 扩展的按钮集合
             }
         });
 
@@ -180,7 +159,8 @@
                 }
             });
         });
-        alert(JSON.stringify(data))
+        alert(JSON.stringify(data));
+        $("#bpmnIframe")[0].contentWindow.save(data);
     }
     // 显示步骤时将触发事件
     $("#smartwizard").on("showStep", function(e, anchorObject, stepNumber, stepDirection, stepPosition) {

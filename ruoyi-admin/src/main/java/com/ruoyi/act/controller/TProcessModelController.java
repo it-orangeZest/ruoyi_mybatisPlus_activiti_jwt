@@ -2,15 +2,13 @@ package com.ruoyi.act.controller;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.ruoyi.act.api.ProcessDefinitionService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.act.domain.TProcessModel;
@@ -19,6 +17,9 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 流程模型Controller
@@ -34,6 +35,9 @@ public class TProcessModelController extends BaseController
 
     @Autowired
     private ITProcessModelService tProcessModelService;
+
+    @Autowired
+    private ProcessDefinitionService processDefinitionService;
 
     @RequiresPermissions("act/definition:model:view")
     @GetMapping()
@@ -123,5 +127,26 @@ public class TProcessModelController extends BaseController
     public AjaxResult remove(String ids)
     {
         return toAjax(tProcessModelService.removeByIds(Arrays.asList(ids.split(","))));
+    }
+
+    /**
+     * 流程编辑器上传功能
+     * @param request
+     * @param multipartFile
+     * @return
+     */
+    @ResponseBody
+    @PostMapping(value = "/upload")
+    public AjaxResult upload(HttpServletRequest request, @RequestParam("processFile") MultipartFile multipartFile) {
+        String fileName = this.processDefinitionService.upload(request, multipartFile);
+        return AjaxResult.success("成功", fileName);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/save")
+    public AjaxResult save(@RequestParam("name") String name, @RequestParam("key") String key,
+                           @RequestParam(value = "description", required = false) String description,
+                           @RequestParam("name") String values){
+        return null;
     }
 }

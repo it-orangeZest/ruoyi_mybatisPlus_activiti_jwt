@@ -173,6 +173,8 @@ $(function () {
   // 点击上传
   $("#saveBpmnModel").on("click", function () {
     console.log(1);
-    tools.saveBpmnModel(bpmnModeler, modelId)
+    //tools.saveBpmnModel(bpmnModeler, modelId)
+    tools.saveBpmnModel(formData, bpmnModeler)
   })
+
 });
