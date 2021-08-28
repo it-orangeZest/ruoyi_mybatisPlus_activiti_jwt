@@ -8,6 +8,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.uuid.UUID;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.activiti.editor.constants.ModelDataJsonConstants;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,7 @@ public class ProcessDefinitionService {
         List<DefinitionVO> voList = new ArrayList<>();
         List<ProcessDefinition> list = this.repositoryService.createProcessDefinitionQuery()
                 .latestVersion()
+                .active()
                 .orderByDeploymentId().asc()
                 .list();
         for (ProcessDefinition e : list){
@@ -137,7 +140,57 @@ public class ProcessDefinitionService {
 
             return modelId;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * 根据modelId获取模型xml字节
+     * @param modelId
+     * @return
+     */
+    public byte[] getBpmnXML(String modelId) {
+        byte[] source = this.repositoryService.getModelEditorSource(modelId);
+        return source;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String editModel(String modelId, String values){
+        try {
+            repositoryService.addModelEditorSource(modelId, values.getBytes("utf-8"));
+            return "success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 删除流程模型
+     * @param modelId
+     */
+    public void deleteModel(String modelId) {
+        this.repositoryService.deleteModel(modelId);
+    }
+
+    /**
+     * 将流程模型部署
+     * @param modelId
+     */
+    public String deployModel(String modelId) {
+        Model model = repositoryService.getModel(modelId);
+        byte[] source = repositoryService.getModelEditorSource(modelId);
+
+        String stringBPMN = new String(source);
+        Deployment deployment = repositoryService.createDeployment()
+                .addString("CreateWithBPMNJS.bpmn",stringBPMN)
+                .name(model.getName())
+                .key(modelId)
+                .deploy();
+        return deployment.getId();
     }
 }

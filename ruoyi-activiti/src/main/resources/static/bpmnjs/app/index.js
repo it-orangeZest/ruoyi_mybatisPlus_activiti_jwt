@@ -61,7 +61,7 @@ $(function () {
       "modelId":Id
     }
     $.ajax({
-      url: publicurl+'act_model/getBpmnXML',
+      url: publicurl+'act/definition/model/getBpmnXML',
       type: 'GET',
       data: param,
       dataType:'text',
@@ -170,7 +170,7 @@ $(function () {
     console.log(1);
     tools.upload(bpmnModeler,container)
   })
-  // 点击上传
+  // 点击保存
   $("#saveBpmnModel").on("click", function () {
     console.log(1);
     //tools.saveBpmnModel(bpmnModeler, modelId)

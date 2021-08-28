@@ -50,10 +50,10 @@
         </dependency>
 
         <!-- 核心模块-->
-        <dependency>
+        <!--<dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-framework</artifactId>
-        </dependency>
+        </dependency>-->
 
         <!-- 定时任务-->
         <dependency>
@@ -67,6 +67,10 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-activiti</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

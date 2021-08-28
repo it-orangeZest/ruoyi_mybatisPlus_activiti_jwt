@@ -1,65 +1,295 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" >
 <head>
-    <th:block th:include="include :: header('修改流程模型')" />
+    <th:block th:include="include :: header('新增表单设计')" />
+    <th:block th:include="include :: jquery-smartwizard-css" />
+    <th:block th:include="include :: select2-css" />
+    <style type="text/css">
+        /* 如果要让工具栏固定在页面底部,使用下面的样式,不需要的可以注释 */
+        .sw>.toolbar-bottom{
+            z-index: 100;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            position: fixed;
+            text-align: right;
+            background: #fff;
+            box-shadow: 0 -2px 6px 1px hsla(223,8%,83%,.5);
+            border-top: 1px solid #e3e4e8;
+        }
+        /* 如果设置了是否自动调节高度为false,需要加滚动条 */
+        .sw>.tab-content{
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        #smartwizard{
+            background-color: white;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 1px 1px 3px rgb(0 0 0 / 20%);
+        }
+    </style>
 </head>
-<body class="white-bg">
-    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
-        <form class="form-horizontal m" id="form-model-edit" th:object="${tProcessModel}">
-            <input name="id" th:field="*{id}" type="hidden">
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">key：</label>
-                <div class="col-sm-8">
-                    <input name="processKey" th:field="*{processKey}" class="form-control" type="text">
-                </div>
-            </div>
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">部门id：</label>
-                <div class="col-sm-8">
-                    <input name="deptId" th:field="*{deptId}" class="form-control" type="text">
-                </div>
-            </div>
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">模型名称：</label>
-                <div class="col-sm-8">
-                    <input name="name" th:field="*{name}" class="form-control" type="text">
-                </div>
-            </div>
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">表单id：</label>
-                <div class="col-sm-8">
-                    <input name="formId" th:field="*{formId}" class="form-control" type="text">
-                </div>
-            </div>
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">状态：</label>
-                <div class="col-sm-8">
-                    <div class="radio-box" th:each="dict : ${@dict.getType('sys_normal_disable')}">
-                        <input type="radio" th:id="${'status_' + dict.dictCode}" name="status" th:value="${dict.dictValue}" th:field="*{status}">
-                        <label th:for="${'status_' + dict.dictCode}" th:text="${dict.dictLabel}"></label>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight" style="height: 100%;">
+    <div class="row">
+        <div class="col-sm-12">
+
+
+            <div id="smartwizard">
+                <h2 style="padding-left: 10px; font-weight: 600;">
+                    流程模型设计向导
+                </h2>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#step-1"> 第一步：选择流程发起表单 </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#step-2"> 第二步：设计流程 </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#step-3"> 第三步：填写流程模型信息 </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="step-1" class="tab-pane" role="tabpanel" aria-labelledby="step-1">
+                        <div>
+                            <form class="form form-horizontal m-t">
+                                <div class="ibox">
+                                    <div class="ibox-title">
+                                        <h5>选择表单</h5>
+                                    </div>
+                                    <div class="ibox-content">
+                                        <div class="form-group">
+                                            <label class="col-sm-1 control-label" style="width: 104px;text-align: right;padding-right: 0px;">表单：</label>
+
+                                            <div class="col-sm-5" style="padding-left: 0px;">
+                                                <select id="form_select" name="formId" class="form-control" onchange="showForm()" required>
+
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-5" style="color: #0064b6; padding: 7px 0; cursor: pointer;" onclick="openDesignTab()">没有想要的表单？点击去设计</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="ibox">
+                                <div class="ibox-title">
+                                    <h5>表单预览</h5>
+                                </div>
+                                <div class="ibox-content">
+                                    <div id="form_show" style="min-height: 300px;"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div id="step-2" class="tab-pane" role="tabpanel" aria-labelledby="step-2">
+                        <div>
+                            <iframe id="bpmnIframe" th:src="'/bpmnjs/dist/index.html?type=edit&modelId=' + ${tProcessModel.modelId}" style="width: 100%; height: 620px; border: 0;"></iframe>
+                        </div>
+                    </div>
+                    <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
+                        <div>
+                            <form class="form form-horizontal m-t" th:object="${tProcessModel}">
+                                <div class="ibox">
+                                    <div class="ibox-title">
+                                        <h5>流程模型信息</h5>
+                                    </div>
+                                    <div class="ibox-content">
+                                        <input type="hidden" name="modelId" placeholder="modelId" class="form-control" th:field="*{modelId}">
+                                        <input type="hidden" name="id" placeholder="id" class="form-control" th:field="*{id}">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" >流程key：</label>
+
+                                            <div class="col-sm-8" >
+                                                <input type="text" name="processKey" placeholder="流程key" class="form-control" th:field="*{processKey}">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" >流程名称：</label>
+
+                                            <div class="col-sm-8" >
+                                                <input type="text" name="name" placeholder="流程名称" class="form-control" th:field="*{name}">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" >所属部门：</label>
+
+                                            <div class="col-sm-8" >
+                                                <input type="text" name="deptId" placeholder="所属部门" class="form-control" th:field="*{deptId}">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" >描述：</label>
+
+                                            <div class="col-sm-8" >
+                                                <textarea name="remark" class="form-control real" th:field="*{remark}"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="form-group">    
-                <label class="col-sm-3 control-label">备注：</label>
-                <div class="col-sm-8">
-                    <input name="remark" th:field="*{remark}" class="form-control" type="text">
-                </div>
-            </div>
-        </form>
+
+
+        </div>
+
     </div>
-    <th:block th:include="include :: footer" />
-    <script th:inline="javascript">
-        var prefix = ctx + "act/definition/model";
-        $("#form-model-edit").validate({
-            focusCleanup: true
+</div>
+<th:block th:include="include :: footer" />
+<th:block th:include="include :: jquery-smartwizard-js" />
+<th:block th:include="include :: select2-js" />
+<script th:inline="javascript">
+    var prefix = ctx + "act/definition/model";
+    var parentTabe = [[${windowName}]];
+    var tProcessModel = [[${tProcessModel}]];
+    $("#form-form-add").validate({
+        focusCleanup: true
+    });
+
+    function submitHandler() {
+        if ($.validate.form()) {
+            $.operate.save(prefix + "/add", $('#form-form-add').serialize());
+        }
+    }
+
+
+
+
+    $(document).ready(function() {
+        // 工具栏按钮
+        var btnFinish = $('<a id="btn-finish"></a>').text('保存')
+            .addClass('btn btn-info')
+            .on('click', function(){ submit(); });
+        var btnCancel = $('<a id="btn-cancel"></a>').text('取消')
+            .addClass('btn btn-danger')
+            .on('click', function(){ $('#smartwizard').smartWizard("reset"); });
+        // 下面两个按钮是为了因为插件默认的是botton,这里换成<a>,也可以选择用样式替换,或者不替换
+        var btnNext = $('<a id="btn-next"></a>').text('下一步')
+            .addClass('btn btn-info')
+            .on('click', function(){ $('#smartwizard').smartWizard("next");});
+        var btnPrev = $('<a id="btn-prev"></a>').text('上一步')
+            .addClass('btn btn-success disabled')
+            .on('click', function(){ $('#smartwizard').smartWizard("prev"); });
+        // 初始化表单向导组件
+        $('#smartwizard').smartWizard({
+            theme: 'arrows', // default, arrows, dots, progress
+            autoAdjustHeight : false, // 自动调整高度, 默认true
+            enableURLhash:false, //开启URL hash,开启后点击浏览器前进后退按钮会执行下一步和上一步操作
+            transition: {
+                animation: 'slide-horizontal', // Effect on navigation, none/fade/slide-horizontal/slide-vertical/slide-swing
+            },
+            toolbarSettings: {
+                showNextButton: false,// 因为上面自定义了下一步按钮, 所以隐藏掉插件自带的按钮, 如果不使用自定义按钮, 需要改为true或者去掉该属性
+                showPreviousButton: false,// 因为上面自定义了上一步按钮, 所以隐藏掉插件自带的按钮, 如果不使用自定义按钮, 需要改为true或者去掉该属性
+                toolbarExtraButtons: [btnPrev,btnNext,btnFinish]// 扩展的按钮集合
+            }
         });
 
-        function submitHandler() {
-            if ($.validate.form()) {
-                $.operate.save(prefix + "/edit", $('#form-model-edit').serialize());
-            }
+        initSelect();
+        showForm();
+
+    });
+
+    function submit(){
+        var data = {};
+        $('.form').each(function (index, form){
+            // 这里可以使用$.common.formToJSON(formId);  需要在form上加id
+            $.each($(form).serializeArray(), function(i, field) {
+                if(data[field.name]) {
+                    data[field.name] += ("," + field.value);
+                } else {
+                    data[field.name] = field.value;
+                }
+            });
+        });
+        //给流程编辑页面的formData变量赋值
+        $("#bpmnIframe")[0].contentWindow.formData = data;
+        $("#bpmnIframe")[0].contentWindow.document.getElementById("saveBpmnModel").click()
+    }
+    // 显示步骤时将触发事件
+    $("#smartwizard").on("showStep", function(e, anchorObject, stepNumber, stepDirection, stepPosition) {
+        // 下面按钮是工具栏的
+        $("#btn-prev").removeClass('disabled');
+        $("#btn-next").removeClass('disabled');
+        $("#btn-finish").removeClass('disabled');
+        if(stepPosition === 'first') {
+            $("#btn-prev").addClass('disabled');
+            $("#btn-finish").addClass('disabled');
+        } else if(stepPosition === 'last') {
+            $("#btn-next").addClass('disabled');
+        } else {
+            $("#btn-prev").removeClass('disabled');
+            $("#btn-next").removeClass('disabled');
+            $("#btn-finish").addClass('disabled');
         }
-    </script>
+    });
+
+    // 该事件在离开某个步骤之前触发
+    $("#smartwizard").on("leaveStep", function(e, anchorObject, currentStepNumber, nextStepNumber, stepDirection) {
+        if(stepDirection == 'forward'){
+            var form = $("#step-" + (currentStepNumber + 1)).find('.form');
+            if(form.length > 0){
+                return form.validate().form();
+            }
+            return true;
+        }
+        return true;
+    });
+
+    $("#theme-selector").on("change", function() {
+        // Change theme
+        var options = {
+            theme : $(this).val()
+        };
+        $('#smartwizard').smartWizard("setOptions", options);
+        return true;
+    });
+
+    function initSelect(){
+        debugger
+        $.ajax({
+            url: "/custForm/form/getFormByStatus?status=0",
+            type: "GET",
+            success: function(res){
+                debugger;
+                var data = [{"id": "", "text": "--请选择--"}];
+                for(var i=0 ; i<res.length ; i++){
+                    data.push({"id": res[i].id, "text": res[i].formName});
+                }
+                $("#form_select").select2({
+                    data: data
+                });
+                $("#form_select").select2('val', tProcessModel.formId+"");
+            }
+        })
+    }
+
+    function showForm(){
+        debugger;
+        var id = $("#form_select").select2("val");
+        $.ajax({
+            url: "/custForm/form/getFormById?id="+id,
+            type: "GET",
+            success: function(res){
+                $("#form_show").html(res.content);
+            }
+        })
+    }
+
+    function openDesignTab(){
+        $.modal.openTab("表单编辑页", "/custForm/form/designFromDefinition?windowName="+window.name);
+    }
+
+    function resetSelect2(){
+        $("#form_show").text("");
+        $("#form_select").select2('destroy').empty();
+        initSelect();
+    }
+</script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 package com.ruoyi.act.controller;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import com.ruoyi.common.utils.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
@@ -21,6 +24,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 流程模型Controller
@@ -99,10 +103,11 @@ public class TProcessModelController extends BaseController
     /**
      * 修改流程模型
      */
-    @GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap mmap)
+    @GetMapping("/edit")
+    public String edit(Long id, String windowName, ModelMap mmap)
     {
         TProcessModel tProcessModel = tProcessModelService.getById(id);
+        mmap.put("windowName", windowName);
         mmap.put("tProcessModel", tProcessModel);
         return prefix + "/edit";
     }
@@ -126,9 +131,18 @@ public class TProcessModelController extends BaseController
     @Log(title = "流程模型", businessType = BusinessType.DELETE)
     @PostMapping( "/remove")
     @ResponseBody
+    @Transactional
     public AjaxResult remove(String ids)
     {
-        return toAjax(tProcessModelService.removeByIds(Arrays.asList(ids.split(","))));
+        String[] arr = ids.split(",");
+        boolean b = false;
+        for(String id : arr){
+            TProcessModel tProcessModel = this.tProcessModelService.getById(id);
+            String modelId = tProcessModel.getModelId();
+            this.processDefinitionService.deleteModel(modelId);
+            b = this.tProcessModelService.removeById(id);
+        }
+        return toAjax(b);
     }
 
     /**
@@ -146,23 +160,62 @@ public class TProcessModelController extends BaseController
 
     @ResponseBody
     @PostMapping(value = "/save")
-    public AjaxResult save(String name, String key, Long formId,
-                           String description, Long deptId, String status,
-                           String values){
+    public AjaxResult save(TProcessModel tProcessModel){
 
-        boolean save = false;
-        String modelId = this.processDefinitionService.saveModel(name, key, description, values);
-        if(StringUtils.isNotBlank(modelId)){
-            TProcessModel tProcessModel = new TProcessModel();
-            tProcessModel.setDeptId(deptId);
-            tProcessModel.setFormId(formId);
-            tProcessModel.setName(name);
-            tProcessModel.setProcessKey(key);
-            tProcessModel.setStatus(status);
-            tProcessModel.setModelId(modelId);
-            tProcessModel.setRemark(description);
-            save = this.tProcessModelService.save(tProcessModel);
+        //没有模型id，创建
+        if(StringUtils.isBlank(tProcessModel.getModelId())){
+            boolean save = false;
+            String modelId = this.processDefinitionService.saveModel(tProcessModel.getName(),
+                    tProcessModel.getProcessKey(),
+                    tProcessModel.getRemark(),
+                    tProcessModel.getValues());
+            if(StringUtils.isNotBlank(modelId)){
+                tProcessModel.setModelId(modelId);
+                tProcessModel.setStatus("act_model_status_001");
+                save = this.tProcessModelService.save(tProcessModel);
+            }
+            return save ? AjaxResult.success() : AjaxResult.error();
+        } else {//有模型流程，修改
+            boolean edit = false;
+
+            String result = this.processDefinitionService.editModel(tProcessModel.getModelId(), tProcessModel.getValues());
+            if(StringUtils.equals(result, "success")){
+                tProcessModel.setStatus("act_model_status_002");
+                edit = this.tProcessModelService.updateById(tProcessModel);
+            }
+
+            return edit ? AjaxResult.success() : AjaxResult.error();
         }
-        return save ? AjaxResult.success() : AjaxResult.error();
+    }
+
+    @ResponseBody
+    @RequestMapping("/getBpmnXML")
+    public void getBpmnXML(HttpServletResponse response, String modelId){
+        byte[] source = this.processDefinitionService.getBpmnXML(modelId);
+
+        response.setContentType("text/xml");
+
+        try {
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.write(source);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("/deployModel")
+    public AjaxResult deployModel(Long id){
+        boolean b = false;
+                TProcessModel tProcessModel = this.tProcessModelService.getById(id);
+        String deploymentId = this.processDefinitionService.deployModel(tProcessModel.getModelId());
+        if(StringUtils.isNotBlank(deploymentId)){
+            TProcessModel model = new TProcessModel();
+            model.setId(id);
+            model.setStatus("act_model_status_003");
+            b = this.tProcessModelService.updateById(model);
+        }
+
+        return b ? AjaxResult.success() : AjaxResult.error();
     }
 }

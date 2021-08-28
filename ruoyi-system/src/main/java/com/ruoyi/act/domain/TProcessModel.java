@@ -1,5 +1,6 @@
 package com.ruoyi.act.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -39,6 +40,9 @@ public class TProcessModel extends MPBaseEntity
     private String status;
 
     private String modelId;
+
+    @TableField(exist = false)
+    private String values;
 
     public void setId(Long id) 
     {
@@ -103,6 +107,14 @@ public class TProcessModel extends MPBaseEntity
         this.modelId = modelId;
     }
 
+    public String getValues() {
+        return values;
+    }
+
+    public void setValues(String values) {
+        this.values = values;
+    }
+
     @Override
     public String toString() {
         return "TProcessModel{" +
@@ -113,6 +125,7 @@ public class TProcessModel extends MPBaseEntity
                 ", formId=" + formId +
                 ", status='" + status + '\'' +
                 ", modelId='" + modelId + '\'' +
+                ", values='" + values + '\'' +
                 '}';
     }
 }

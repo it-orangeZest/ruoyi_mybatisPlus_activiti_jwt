@@ -28,7 +28,7 @@
                             </li>
                             <li>
                                 <label>状态：</label>
-                                <select name="status" th:with="type=${@dict.getType('sys_normal_disable')}">
+                                <select name="status" th:with="type=${@dict.getType('act_model_status')}">
                                     <option value="">所有</option>
                                     <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
                                 </select>
@@ -65,7 +65,7 @@
     <script th:inline="javascript">
         var editFlag = [[${@permission.hasPermi('act/definition:model:edit')}]];
         var removeFlag = [[${@permission.hasPermi('act/definition:model:remove')}]];
-        var statusDatas = [[${@dict.getType('sys_normal_disable')}]];
+        var statusDatas = [[${@dict.getType('act_model_status')}]];
         var prefix = ctx + "act/definition/model";
 
         $(function() {
@@ -112,11 +112,28 @@
                     title: '备注'
                 },
                 {
+                    field: 'createBy',
+                    title: '创建人'
+                },
+                {
+                    field: 'createTime',
+                    title: '创建时间'
+                },
+                {
+                    field: 'updateBy',
+                    title: '更新人'
+                },
+                {
+                    field: 'updateTime',
+                    title: '更新时间'
+                },
+                {
                     title: '操作',
                     align: 'center',
                     formatter: function(value, row, index) {
                         var actions = [];
-                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="openEditTab(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="deployModel(\'' + row.id + '\')"><i class="fa fa-edit"></i>部署</a> ');
                         actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
                         return actions.join('');
                     }
@@ -128,6 +145,29 @@
         function openDesignTab(){
             let windowName = window.name;
             $.modal.openTab("流程模型设计", prefix + "/add?windowName="+windowName);
+        }
+
+        function openEditTab(id){
+            let windowName = window.name;
+            $.modal.openTab("流程模型设计", prefix + "/edit?id="+id+"&windowName="+windowName);
+        }
+
+        function deployModel(id){
+            $.ajax({
+                url: prefix + "/deployModel?id=" + id,
+                type: "get",
+                success: function (res) {
+                    if(res.code == 0){
+                        $.modal.msgSuccess("部署成功");
+                        $.table.refresh();
+                    }else{
+                        $.modal.msgSuccess("部署失败");
+                    }
+                },
+                error: function (res) {
+                    $.modal.msgSuccess("部署异常");
+                }
+            })
         }
     </script>
 </body>
