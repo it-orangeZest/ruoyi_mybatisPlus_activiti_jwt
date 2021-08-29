@@ -2,27 +2,37 @@ package com.ruoyi.act.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.pagehelper.Page;
 import com.ruoyi.act.config.GlobalConfig;
+import com.ruoyi.act.domain.TProcessModel;
 import com.ruoyi.act.domain.VO.DefinitionVO;
-import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.act.domain.VO.ProcessDefinitionVO;
+import com.ruoyi.act.service.ITProcessModelService;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.uuid.UUID;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntityImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.repository.ProcessDefinitionQuery;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.activiti.editor.constants.ModelDataJsonConstants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 
 /**
  * @author badcat
@@ -34,6 +44,12 @@ public class ProcessDefinitionService {
 
     @Autowired
     private RepositoryService repositoryService;
+
+    @Autowired
+    private RuntimeService runtimeService;
+
+    @Autowired
+    private ITProcessModelService itProcessModelService;
 
     /**
      * 获取所有最新版本的流程定义，按部署id排序
@@ -193,4 +209,165 @@ public class ProcessDefinitionService {
                 .deploy();
         return deployment.getId();
     }
+
+    /**
+     * 获取部署管理页面列表数据
+     * @param processDefinition
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<ProcessDefinitionVO> getDeployManagerList(ProcessDefinitionVO processDefinition, Integer pageNum, Integer pageSize) {
+        Page<ProcessDefinitionVO> list = new Page<>();
+        ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery();
+        processDefinitionQuery.orderByProcessDefinitionId().orderByProcessDefinitionVersion().desc();
+        if (com.ruoyi.common.utils.StringUtils.isNotBlank(processDefinition.getName())) {
+            processDefinitionQuery.processDefinitionNameLike("%" + processDefinition.getName() + "%");
+        }
+        if (com.ruoyi.common.utils.StringUtils.isNotBlank(processDefinition.getKey())) {
+            processDefinitionQuery.processDefinitionKeyLike("%" + processDefinition.getKey() + "%");
+        }
+        if (com.ruoyi.common.utils.StringUtils.isNotBlank(processDefinition.getCategory())) {
+            processDefinitionQuery.processDefinitionCategoryLike("%" + processDefinition.getCategory() + "%");
+        }
+
+        List<ProcessDefinition> processDefinitionList;
+        if (pageNum != null && pageSize != null) {
+            processDefinitionList = processDefinitionQuery.listPage((pageNum - 1) * pageSize, pageSize);
+            list.setTotal(processDefinitionQuery.count());
+            list.setPageNum(pageNum);
+            list.setPageSize(pageSize);
+        } else {
+            processDefinitionList = processDefinitionQuery.list();
+        }
+        for (ProcessDefinition definition: processDefinitionList) {
+            ProcessDefinitionEntityImpl entityImpl = (ProcessDefinitionEntityImpl) definition;
+            ProcessDefinitionVO entity = new ProcessDefinitionVO();
+            entity.setId(definition.getId());
+            entity.setKey(definition.getKey());
+            entity.setName(definition.getName());
+            entity.setCategory(definition.getCategory());
+            entity.setVersion(definition.getVersion());
+            entity.setDescription(definition.getDescription());
+            entity.setDeploymentId(definition.getDeploymentId());
+            Deployment deployment = repositoryService.createDeploymentQuery()
+                    .deploymentId(definition.getDeploymentId())
+                    .singleResult();
+            entity.setDeploymentTime(deployment.getDeploymentTime());
+            entity.setDiagramResourceName(definition.getDiagramResourceName());
+            entity.setResourceName(definition.getResourceName());
+            entity.setSuspendState(entityImpl.getSuspensionState() + "");
+            if (entityImpl.getSuspensionState() == 1) {
+                entity.setSuspendStateName("已激活");
+            } else {
+                entity.setSuspendStateName("已挂起");
+            }
+            list.add(entity);
+        }
+        return list;
+    }
+
+    /**
+     * 激活或挂起流程
+     * @param id
+     * @param suspendState
+     */
+    public void suspendOrActiveApply(String id, String suspendState) {
+        if ("1".equals(suspendState)) {
+            // 当流程定义被挂起时，已经发起的该流程定义的流程实例不受影响（如果选择级联挂起则流程实例也会被挂起）。
+            // 当流程定义被挂起时，无法发起新的该流程定义的流程实例。
+            // 直观变化：act_re_procdef 的 SUSPENSION_STATE_ 为 2
+            repositoryService.suspendProcessDefinitionById(id);
+        } else if ("2".equals(suspendState)) {
+            repositoryService.activateProcessDefinitionById(id);
+        }
+    }
+
+    /**
+     * 删除流程定义
+     * @param ids
+     * @return
+     */
+    public int deleteProcessDeploymentByIds(String deploymentIds) throws Exception {
+        String[] deploymentIdsArr = Convert.toStrArray(deploymentIds);
+        int counter = 0;
+        for (String deploymentId: deploymentIdsArr) {
+            List<ProcessInstance> instanceList = runtimeService.createProcessInstanceQuery()
+                    .deploymentId(deploymentId)
+                    .list();
+            if (!CollectionUtils.isEmpty(instanceList)) {
+                // 存在流程实例的流程定义
+                throw new Exception("删除失败，存在运行中的流程实例");
+            }
+            repositoryService.deleteDeployment(deploymentId, true); // true 表示级联删除引用，比如 act_ru_execution 数据
+            counter++;
+        }
+        return counter;
+    }
+
+    /**
+     * 根据附件部署流程
+     * @param filePath
+     * @throws FileNotFoundException
+     */
+    public void deployProcessDefinition(String filePath) throws Exception {
+
+        Deployment deploy = null;
+        if (StringUtils.isNotBlank(filePath)) {
+            if (filePath.endsWith(".zip")) {
+                ZipInputStream inputStream = new ZipInputStream(new FileInputStream(filePath));
+                deploy = repositoryService.createDeployment()
+                        .addZipInputStream(inputStream)
+                        .deploy();
+            } else if (filePath.endsWith(".bpmn")) {
+                deploy = repositoryService.createDeployment()
+                        .addInputStream(filePath, new FileInputStream(filePath))
+                        .deploy();
+            }
+
+            if(deploy != null){
+                List<ProcessDefinition> list = this.repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId())
+                        .list();
+
+                for(ProcessDefinition e : list){
+                    InputStream inputStream = this.readResource(e.getId(), e.getResourceName());
+                    byte[] bytes = new byte[0];
+                    bytes = new byte[inputStream.available()];
+                    inputStream.read(bytes);
+                    String xml = new String(bytes);
+
+                    String modelId = this.saveModel(e.getName(), e.getKey(),
+                            "from upload file", xml);
+
+                    TProcessModel tProcessModel = new TProcessModel();
+                    tProcessModel.setProcessKey(e.getKey());
+                    tProcessModel.setName(e.getName());
+                    tProcessModel.setModelId(modelId);
+                    tProcessModel.setStatus("act_model_status_004");
+                    boolean save = this.itProcessModelService.save(tProcessModel);
+                }
+            }
+        }
+    }
+
+    /**
+     * 流程定义转流程模型
+     * @param processDefinitionId
+     */
+    /*public void convert2Model(String processDefinitionId) throws Exception {
+        ProcessDefinition processDefinition = this.repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(processDefinitionId)
+                .singleResult();
+
+        InputStream inputStream = this.readResource(processDefinitionId, processDefinition.getResourceName());
+        byte[] bytes = new byte[0];
+        bytes = new byte[inputStream.available()];
+        inputStream.read(bytes);
+        String xml = new String(bytes);
+
+        String modelId = this.saveModel(processDefinition.getName(), processDefinition.getKey(),
+                "from definition", xml);
+
+        TProcessModel tProcessModel = new TProcessModel();
+        //tProcessModel.set
+    }*/
 }

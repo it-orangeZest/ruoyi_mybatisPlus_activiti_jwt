@@ -38,7 +38,7 @@ public class ${ClassName}Controller extends BaseController
     private String prefix = "${moduleName}/${businessName}";
 
     @Autowired
-    private I${ClassName}Service ${className}Service;
+    private I${ClassName}Service i${className}Service;
 
     @RequiresPermissions("${permissionPrefix}:view")
     @GetMapping()

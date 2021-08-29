@@ -27,6 +27,9 @@ public class TProcessModel extends MPBaseEntity
     @Excel(name = "部门id")
     private Long deptId;
 
+    @TableField(exist = false)
+    private String deptName;
+
     /** 模型名称 */
     @Excel(name = "模型名称")
     private String name;
@@ -34,6 +37,9 @@ public class TProcessModel extends MPBaseEntity
     /** 表单id */
     @Excel(name = "表单id")
     private Long formId;
+
+    @TableField(exist = false)
+    private String formName;
 
     /** 状态 */
     @Excel(name = "状态")
@@ -115,14 +121,32 @@ public class TProcessModel extends MPBaseEntity
         this.values = values;
     }
 
+    public String getFormName() {
+        return formName;
+    }
+
+    public void setFormName(String formName) {
+        this.formName = formName;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
+
     @Override
     public String toString() {
         return "TProcessModel{" +
                 "id=" + id +
                 ", processKey='" + processKey + '\'' +
                 ", deptId=" + deptId +
+                ", deptName='" + deptName + '\'' +
                 ", name='" + name + '\'' +
                 ", formId=" + formId +
+                ", formName='" + formName + '\'' +
                 ", status='" + status + '\'' +
                 ", modelId='" + modelId + '\'' +
                 ", values='" + values + '\'' +
