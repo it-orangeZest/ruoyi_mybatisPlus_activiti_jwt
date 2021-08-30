@@ -6,7 +6,7 @@
 <body class="gray-bg">
 <div class="container-div" style="padding: 20px 28px;">
     <div class="row">
-        <div class="col-sm-4" th:each="df : ${sysProcessList}" th:onclick="$.modal.openTab([[${df.getName()}]],[['/act/instanceList?key='+${df.getKey()}]])">
+        <div class="col-sm-4" th:each="df : ${sysProcessList}" th:onclick="$.modal.openTab([[${df.getName()}]],[['/act/processDefinition/startForm?id='+${df.getId()}]])">
             <div class="ibox">
                 <div class="ibox-title">
                     <h5 th:text="${df.getName()}"></h5>

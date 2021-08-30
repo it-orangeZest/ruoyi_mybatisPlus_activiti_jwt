@@ -265,7 +265,7 @@
                 $("#form_select").select2({
                     data: data
                 });
-                $("#form_select").select2('val', tProcessModel.formId+"");
+                $("#form_select").val(tProcessModel.formId+"").trigger("change");
             }
         })
     }

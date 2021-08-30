@@ -1,13 +1,19 @@
 package com.ruoyi.act.controller.commom;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.act.api.ProcessDefinitionService;
-import com.ruoyi.act.domain.VO.DefinitionVO;
+import com.ruoyi.act.domain.TProcessModel;
+import com.ruoyi.act.domain.VO.SysProcessVO;
+import com.ruoyi.act.service.ITProcessModelService;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.system.domain.TCustForm;
+import com.ruoyi.system.service.ITCustFormService;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,16 +40,70 @@ public class ProcessDefinitionController extends BaseController {
     @Autowired
     private ProcessDefinitionService processDefinitionService;
 
+    @Autowired
+    private ITProcessModelService itProcessModelService;
+
+    @Autowired
+    private ITCustFormService itCustFormService;
+
     private String prefix = "act/definition";
     /**
-     * 获取所有最新版本的流程定义，按部署id排序
+     * 获取所属部门所有最新版本的流程定义，按部署id排序
      * @return
      */
+    /*@RequestMapping("/getSysProcessList")
+    public String getDefinitions(Model model){
+
+        SysUser currentUser = ShiroUtils.getSysUser();
+        Long deptId = currentUser.getDeptId();
+        TProcessModel tProcessModel = new TProcessModel();
+        tProcessModel.setDeptId(deptId);
+        List<TProcessModel> tProcessModelList = this.itProcessModelService.selectTProcessModelByDept(tProcessModel);
+
+        List<DefinitionVO> voList = new ArrayList<>();
+        for(TProcessModel e : tProcessModelList){
+            ProcessDefinition definition = this.processDefinitionService.getDefinitionByKey(e.getProcessKey());
+            DefinitionVO vo = new DefinitionVO();
+            vo.setId(definition.getId());
+            vo.setDeploymentId(definition.getDeploymentId());
+            vo.setName(definition.getName());
+            vo.setKey(definition.getKey());
+            vo.setVersion(definition.getVersion());
+            vo.setResourceName(definition.getResourceName());
+            vo.setDiagramResourceName(definition.getDiagramResourceName());
+            voList.add(vo);
+        }
+
+        model.addAttribute("sysProcessList", voList);
+        return prefix + "/sysProcessList";
+    }*/
+
     @RequestMapping("/getSysProcessList")
     public String getDefinitions(Model model){
-        List<DefinitionVO> list = this.processDefinitionService.getDefinitions();
+
+        ArrayList<SysProcessVO> voList = new ArrayList<>();
+
+        QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("status", "act_model_status_002", "act_model_status_003", "act_model_status_004")
+                .orderByDesc("create_time");
+        List<TProcessModel> list = this.itProcessModelService.list(queryWrapper);
+
+        for(TProcessModel e : list){
+            SysProcessVO vo = new SysProcessVO();
+            ProcessDefinition definition = this.processDefinitionService.getDefinitionByKey(e.getProcessKey());
+
+            vo.setDeptId(e.getDeptId());
+            vo.setId(e.getId());
+            vo.setProcesskey(e.getProcessKey());
+            vo.setName(e.getName());
+            vo.setFormId(e.getFormId());
+            vo.setResourceName(definition.getResourceName());
+            vo.setDiagramResourceName(definition.getDiagramResourceName());
+            voList.add(vo);
+        }
+
         model.addAttribute("sysProcessList", list);
-        return prefix + "/sysProcessList";
+        return prefix + "/startProcess/sysProcessList";
     }
 
     /**
@@ -119,4 +178,13 @@ public class ProcessDefinitionController extends BaseController {
         this.processDefinitionService.convert2Model(processDefinitionId);
     }*/
 
+    @RequestMapping("/startForm")
+    public String startForm(String id, Model model){
+        TProcessModel tProcessModel = this.itProcessModelService.getById(id);
+        Long formId = tProcessModel.getFormId();
+        TCustForm tCustForm = this.itCustFormService.getById(formId);
+        model.addAttribute("sysProcessId", id);
+        model.addAttribute("content", tCustForm.getContent());
+        return prefix + "/startProcess/startForm";
+    }
 }

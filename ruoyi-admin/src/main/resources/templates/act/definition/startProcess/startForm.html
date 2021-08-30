@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('任务处理')" />
+    <th:block th:include="include :: layout-latest-css" />
+	<th:block th:include="include :: datetimepicker-css" />
+	<th:block th:include="include :: select2-css" />
+</head>
+<body class="white-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+		<form class="m" id="form-instance-add">
+			<!--<div class="form-group">
+				<label class="col-sm-3 control-label">请假类型：</label>
+				<div class="col-sm-8">
+					<select name="type" class="form-control m-b" th:with="type=${@dict.getType('biz_leave_type')}">
+						<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+					</select>
+				</div>
+			</div>-->
+			<input type="hidden" name="sysProcessId" th:value="${sysProcessId}">
+			<div th:utext="${content}"></div>
+
+
+			<!--<div class="form-group" th:each="f : ${fieldList}">
+				<label class="col-sm-3 control-label">
+					<span style="color: red; ">*</span >
+					<span th:text="${f.getName()}"></span>
+				</label>
+				<div class="col-sm-8" th:if="${f.getTag()=='input'}">
+					<input th:name="${f.getId()}" class="form-control" type="text">
+				</div>
+				<div class="col-sm-8" th:if="${f.getTag()=='select' && f.getMultiple()=='multiple'}">
+					<select class="form-control m-b" th:name="${f.getId()}" th:with="type=${f.getData()}" multiple>
+						<option th:each="op : ${type}" th:value="${op.dictValue}" th:text="${op.dictLabel}"></option>
+					</select>
+				</div>
+				<div class="col-sm-8" th:if="${f.getTag()=='select' && f.getMultiple()!='multiple'}">
+					<select class="form-control m-b" th:name="${f.getId()}" th:with="type=${f.getData()}">
+						<option th:each="op : ${type}" th:value="${op.dictValue}" th:text="${op.dictLabel}"></option>
+					</select>
+				</div>
+				<div class="col-sm-8" th:if="${f.getTag()=='textarea'}">
+					<textarea th:name="${f.getId()}" maxlength="500" class="form-control" th:rows="${f.getRows()}"></textarea>
+				</div>
+				<div class="col-sm-8" th:if="${f.getTag()=='date'}">
+                	<input type="text" class="form-control laydate-demo" placeholder="yyyy-MM-dd HH:mm:ss">
+                </div>
+			</div>-->
+
+
+			<!--<div class="form-group">
+				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>标题：</label>
+				<div class="col-sm-8">
+					<input name="title" class="form-control" type="text" required>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>原因：</label>
+				<div class="col-sm-8">
+					<textarea name="reason" class="form-control" required></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>开始时间：</label>
+				<div class="col-sm-8">
+					<div class="input-group date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						<input name="startTime" class="form-control calcTotalSecondInput" placeholder="yyyy-MM-dd HH:mm" type="text" required>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>结束时间：</label>
+				<div class="col-sm-8">
+					<div class="input-group date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						<input name="endTime" class="form-control calcTotalSecondInput" placeholder="yyyy-MM-dd HH:mm" type="text" required>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">请假时长：</label>
+				<div class="col-sm-8">
+					<input name="totalTime" class="form-control" type="text" style="display: none;">
+					<input name="totalTimeText" class="form-control" type="text" readonly>
+				</div>
+			</div>-->
+		</form>
+	</div>
+<th:block th:include="include :: footer" />
+<th:block th:include="include :: datetimepicker-js" />
+<th:block th:include="include :: layout-latest-js" />
+<th:block th:include="include :: select2-js" />
+<script th:inline="javascript">
+var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
+var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
+var prefix = ctx + "act";
+function submitHandler() {
+
+		$.operate.save(prefix + "/startSysProcessByForm", $('#form-instance-add').serialize());
+
+}
+
+var laydate;
+
+$(function(){
+	initSelect2();
+	initDatetime();
+});
+
+/**
+ * 初始化select2组件
+ */
+function initSelect2(){
+	$(".select2").remove();
+	$(".drag-item select").removeClass("select2-hidden-accessible");
+	$(".drag-item select option").removeAttr("data-select2-id");
+	$(".drag-item select").select2();
+}
+
+/**
+ * 初始化日期组件
+ */
+function initDatetime(){
+	var arr = $(".drag-item");
+	layui.use('laydate', function() {
+		laydate = layui.laydate;
+		for(var i=0 ; i<arr.length ; i++){
+			var c = arr[i];
+			if(c.dataset.type == "drag_datetime"){
+				var reals = $(c).find(".real");
+				for(var j=0 ; j<reals.length ; j++){
+					laydate.render({
+						elem: '#'+$(reals[j]).attr("id"),
+						type: 'datetime',
+						trigger: 'click'
+					});
+				}
+			}
+		}
+	});
+}
+</script>
+</body>
+</html>
