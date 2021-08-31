@@ -96,6 +96,7 @@ function initData(){
 		post: "GET",
 		success: function (res) {
 			console.log(res);
+			debugger;
 			var arr = res.data;
 			for (var i=0 ; i<arr.length ; i++){
 				var task = arr[i];
@@ -108,7 +109,7 @@ function initData(){
 					if(currentVatiableDiv.length == 1){
 						var localName = currentVatiableDiv[0].localName;
 						if(localName == "select"){
-							currentVatiableDiv.select2('val', currentVatiable.value);
+							currentVatiableDiv.val(currentVatiable.value).trigger("change");
 						}else{
 							currentVatiableDiv.val(currentVatiable.value);
 						}

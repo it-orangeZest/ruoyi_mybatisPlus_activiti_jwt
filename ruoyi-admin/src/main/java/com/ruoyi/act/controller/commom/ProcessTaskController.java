@@ -1,5 +1,6 @@
 package com.ruoyi.act.controller.commom;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.ruoyi.act.config.ICustomProcessDiagramGenerator;
 import com.ruoyi.act.config.WorkflowConstants;
@@ -136,15 +137,16 @@ public class ProcessTaskController extends BaseController {
             hisTaskVO.setStartTime(historicTaskInstance.getStartTime());
             hisTaskVO.setEndTime(historicTaskInstance.getEndTime());
             String assignee = historicTaskInstance.getAssignee();
-            String formId = historicTaskInstance.getFormKey();
-            if(StringUtils.isBlank(formId)){
+            String formKey = historicTaskInstance.getFormKey();
+            if(StringUtils.isBlank(formKey) || StringUtils.isBlank(assignee)){
                 List<HistoricVariableInstance> list = historyService
                         .createHistoricVariableInstanceQuery()
                         .taskId(historicTaskInstance.getId())
                         .list();
                 for(HistoricVariableInstance e : list){
-                    if(StringUtils.equals(e.getVariableName(), "formId")){
-                        formId = e.getValue().toString();
+
+                    if(StringUtils.isBlank(formKey) && StringUtils.equals(e.getVariableName(), "formKey")){
+                        formKey = e.getValue().toString();
                     }
                     if(StringUtils.isBlank(assignee) && StringUtils.equals(e.getVariableName(), "assignee")){
                         assignee = e.getValue().toString();
@@ -152,7 +154,9 @@ public class ProcessTaskController extends BaseController {
                 }
             }
             hisTaskVO.setAssignee(assignee);
-            TCustForm tCustForm = this.itCustFormService.getById(formId);
+            QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("form_key", formKey);
+            TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
             hisTaskVO.setFormContent(tCustForm.getContent());
             hisTaskVOS.add(hisTaskVO);
         }
@@ -394,9 +398,18 @@ public class ProcessTaskController extends BaseController {
 
         String formKey = task.getFormKey();
         if(StringUtils.isBlank(formKey)){
-            formKey = "31";
+            Object o = this.taskService.getVariableLocal(task.getId(), "formKey");
+            if(o != null){
+                formKey = o.toString();
+            }
         }
-        TCustForm tCustForm = this.itCustFormService.getById(formKey);
+        if(StringUtils.isBlank(formKey)){
+            formKey = "approveTask_common";
+        }
+
+        QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("form_key", formKey);
+        TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
         //model.addAttribute("fieldList", fieldList);
         model.addAttribute("taskId", task.getId());
         model.addAttribute("content", tCustForm.getContent());
@@ -416,11 +429,11 @@ public class ProcessTaskController extends BaseController {
 
         String taskId = (String)map.get("taskId");
         Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
-        String formId = task.getFormKey();
-        if(StringUtils.isBlank(formId)){
-            formId = "31";
+        String formKey = task.getFormKey();
+        if(StringUtils.isBlank(formKey)){
+            formKey = "approveTask_common";
         }
-        map.put("formId", formId);
+        map.put("formKey", formKey);
         map.put("assignee", loginName);
         taskService.setVariablesLocal(task.getId(), map);
         taskService.complete(taskId, map);

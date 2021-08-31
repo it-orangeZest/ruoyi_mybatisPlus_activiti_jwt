@@ -227,7 +227,8 @@ public class ProcessDefinitionController extends BaseController {
 
         TProcessModel processModel = this.itProcessModelService.getById(sysProcessId);
         String processkey = processModel.getProcessKey();
-        map.put("formId", processModel.getFormId());
+        TCustForm tCustForm = this.itCustFormService.getById(processModel.getFormId());
+        map.put("formKey", tCustForm.getFormKey());
 
         //发起流程
         String loginName = ShiroUtils.getLoginName();

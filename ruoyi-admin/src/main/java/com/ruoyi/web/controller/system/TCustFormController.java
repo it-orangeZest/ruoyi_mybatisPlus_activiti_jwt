@@ -17,10 +17,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 表单设计Controller
@@ -173,7 +174,10 @@ public class TCustFormController extends BaseController
     @GetMapping("/getFormByStatus")
     public List<TCustForm> getFormByStatus(String status){
         QueryWrapper<TCustForm> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", status);
+        Map<String, Object> map = new HashMap<>();
+        map.put("status", status);
+        map.put("type", "act_form_type_001");
+        wrapper.allEq(map);
         List<TCustForm> list = this.tCustFormService.list(wrapper);
         return list;
     }

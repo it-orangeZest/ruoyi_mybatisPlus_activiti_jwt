@@ -80,11 +80,15 @@ public class TProcessModelController extends BaseController
         for(TProcessModel e : list){
             if(e.getFormId() != null){
                 TCustForm custForm = this.itCustFormService.getById(e.getFormId());
-                e.setFormName(custForm.getFormName());
+                if(custForm != null){
+                    e.setFormName(custForm.getFormName());
+                }
             }
             if(e.getDeptId() != null){
                 SysDept sysDept = this.iSysDeptService.selectDeptById(e.getDeptId());
-                e.setDeptName(sysDept.getDeptName());
+                if(sysDept != null){
+                    e.setDeptName(sysDept.getDeptName());
+                }
             }
         }
         return getDataTable(list);
