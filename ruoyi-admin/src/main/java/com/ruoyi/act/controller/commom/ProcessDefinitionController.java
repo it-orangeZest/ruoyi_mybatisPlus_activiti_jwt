@@ -9,11 +9,17 @@ import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.system.domain.TCustForm;
 import com.ruoyi.system.service.ITCustFormService;
+import org.activiti.engine.IdentityService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +29,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author badcat
@@ -45,6 +54,15 @@ public class ProcessDefinitionController extends BaseController {
 
     @Autowired
     private ITCustFormService itCustFormService;
+
+    @Autowired
+    private IdentityService identityService;
+
+    @Autowired
+    private RuntimeService runtimeService;
+
+    @Autowired
+    private TaskService taskService;
 
     private String prefix = "act/definition";
     /**
@@ -93,7 +111,8 @@ public class ProcessDefinitionController extends BaseController {
             ProcessDefinition definition = this.processDefinitionService.getDefinitionByKey(e.getProcessKey());
 
             vo.setDeptId(e.getDeptId());
-            vo.setId(e.getId());
+            vo.setProcessModelId(e.getId());
+            vo.setDefinitionId(definition.getId());
             vo.setProcesskey(e.getProcessKey());
             vo.setName(e.getName());
             vo.setFormId(e.getFormId());
@@ -102,7 +121,7 @@ public class ProcessDefinitionController extends BaseController {
             voList.add(vo);
         }
 
-        model.addAttribute("sysProcessList", list);
+        model.addAttribute("sysProcessList", voList);
         return prefix + "/startProcess/sysProcessList";
     }
 
@@ -179,12 +198,52 @@ public class ProcessDefinitionController extends BaseController {
     }*/
 
     @RequestMapping("/startForm")
-    public String startForm(String id, Model model){
-        TProcessModel tProcessModel = this.itProcessModelService.getById(id);
+    public String startForm(String processModelId, Model model){
+        TProcessModel tProcessModel = this.itProcessModelService.getById(processModelId);
         Long formId = tProcessModel.getFormId();
         TCustForm tCustForm = this.itCustFormService.getById(formId);
-        model.addAttribute("sysProcessId", id);
+        model.addAttribute("sysProcessId", processModelId);
         model.addAttribute("content", tCustForm.getContent());
         return prefix + "/startProcess/startForm";
+    }
+
+    /**
+     * 完成流程发起表单后，发起流程
+     * @param request
+     * @return
+     */
+    @RequestMapping("/startSysProcessByForm")
+    @ResponseBody
+    public AjaxResult startSysProcessByForm(HttpServletRequest request){
+        String sysProcessId = "";
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String, Object> map = new HashMap<>();
+        for(Map.Entry<String, String[]> entry : parameterMap.entrySet() ) {
+            map.put(entry.getKey(), entry.getValue()[0]);
+            if(StringUtils.equals("sysProcessId", entry.getKey())){
+                sysProcessId = entry.getValue()[0];
+            }
+        }
+
+        TProcessModel processModel = this.itProcessModelService.getById(sysProcessId);
+        String processkey = processModel.getProcessKey();
+        map.put("formId", processModel.getFormId());
+
+        //发起流程
+        String loginName = ShiroUtils.getLoginName();
+        //设置发起人
+        identityService.setAuthenticatedUserId(loginName);
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("starter", loginName);
+        ProcessInstance processInstance = this.runtimeService.startProcessInstanceByKey(processkey, map1);
+
+        //获取我的节点
+        Task task = taskService.createTaskQuery().taskAssignee(loginName).processInstanceId(processInstance.getId()).singleResult();
+        //将相关变量放入节点本地变量，查询历史各节点信息时使用
+        taskService.setVariablesLocal(task.getId(), map);
+        //完成节点
+        taskService.complete(task.getId(), map);
+
+        return toAjax(1);
     }
 }

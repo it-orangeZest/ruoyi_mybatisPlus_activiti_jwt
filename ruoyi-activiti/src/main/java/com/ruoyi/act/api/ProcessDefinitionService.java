@@ -349,6 +349,14 @@ public class ProcessDefinitionService {
         }
     }
 
+    public ProcessDefinition getDefinitionByKey(String processKey) {
+        ProcessDefinition processDefinition = this.repositoryService.createProcessDefinitionQuery()
+                .processDefinitionKey(processKey)
+                .latestVersion()
+                .singleResult();
+        return processDefinition;
+    }
+
     /**
      * 流程定义转流程模型
      * @param processDefinitionId

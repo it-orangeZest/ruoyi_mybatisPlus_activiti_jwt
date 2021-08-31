@@ -5,7 +5,9 @@ package com.ruoyi.act.domain.VO;
  * @date 2021-07-27 16:21
  */
 public class SysProcessVO {
-    private Long id;
+    private Long processModelId;
+
+    private String definitionId;
 
     private String processkey;
 
@@ -18,14 +20,6 @@ public class SysProcessVO {
     private String ResourceName;
 
     private String DiagramResourceName;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getProcesskey() {
         return processkey;
@@ -73,5 +67,21 @@ public class SysProcessVO {
 
     public void setDiagramResourceName(String diagramResourceName) {
         DiagramResourceName = diagramResourceName;
+    }
+
+    public Long getProcessModelId() {
+        return processModelId;
+    }
+
+    public void setProcessModelId(Long processModelId) {
+        this.processModelId = processModelId;
+    }
+
+    public String getDefinitionId() {
+        return definitionId;
+    }
+
+    public void setDefinitionId(String definitionId) {
+        this.definitionId = definitionId;
     }
 }

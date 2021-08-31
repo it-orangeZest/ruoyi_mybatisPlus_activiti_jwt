@@ -17,7 +17,7 @@
 					</select>
 				</div>
 			</div>-->
-			<input type="hidden" name="sysProcessId" th:value="${sysProcessId}">
+			<input type="hidden" name="taskId" th:value="${taskId}">
 			<div th:utext="${content}"></div>
 
 
@@ -94,10 +94,10 @@
 <script th:inline="javascript">
 var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
 var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
-var prefix = ctx + "act/processDefinition";
+var prefix = ctx + "act/processTask";
 function submitHandler() {
 
-		$.operate.save(prefix + "/startSysProcessByForm", $('#form-instance-add').serialize());
+		$.operate.save(prefix + "/complete", $('#form-instance-add').serialize());
 
 }
 

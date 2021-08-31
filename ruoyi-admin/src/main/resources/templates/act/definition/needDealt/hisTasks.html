@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('历史任务')" />
+    <th:block th:include="include :: layout-latest-css" />
+	<th:block th:include="include :: datetimepicker-css" />
+	<th:block th:include="include :: select2-css" />
+	<style>
+		.hisTask{
+			border: 1px solid grey;
+			border-radius: 5px;
+			margin-top: 5px;
+		}
+		.hisTask_title1{
+			border-bottom: 1px solid grey;
+			background-color: #DDDDDD;
+			padding: 5px;
+		}
+		.hisTask_conyent{
+			background-color: white;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body class="white-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+		<form class="m" id="form-instance-add">
+
+			<input type="hidden" id="instanceId" th:value="${instanceId}">
+			<div class="hisTask" th:each="tk:${hisTaskVOS}" th:id="${tk.taskId}">
+				<div class="hisTask_title1" th:text="${tk.assignee}"></div>
+				<div class="hisTask_title1" th:text="${#dates.format(tk.endTime, 'yyyy-MM-dd HH:mm')}"></div>
+				<div class="hisTask_conyent" th:utext="${tk.formContent}"></div>
+			</div>
+		</form>
+	</div>
+<th:block th:include="include :: footer" />
+<th:block th:include="include :: datetimepicker-js" />
+<th:block th:include="include :: layout-latest-js" />
+<th:block th:include="include :: select2-js" />
+<script th:inline="javascript">
+var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
+var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
+var prefix = ctx + "act/processTask";
+/*function submitHandler() {
+
+		$.operate.save(prefix + "/complete", $('#form-instance-add').serialize());
+
+}*/
+
+var laydate;
+
+$(function(){
+	initSelect2();
+	initDatetime();
+	initData();
+});
+
+/**
+ * 初始化select2组件
+ */
+function initSelect2(){
+	$(".select2").remove();
+	$(".drag-item select").removeClass("select2-hidden-accessible");
+	$(".drag-item select option").removeAttr("data-select2-id");
+	$(".drag-item select").select2();
+}
+
+/**
+ * 初始化日期组件
+ */
+function initDatetime(){
+	var arr = $(".drag-item");
+	layui.use('laydate', function() {
+		laydate = layui.laydate;
+		for(var i=0 ; i<arr.length ; i++){
+			var c = arr[i];
+			if(c.dataset.type == "drag_datetime"){
+				var reals = $(c).find(".real");
+				for(var j=0 ; j<reals.length ; j++){
+					laydate.render({
+						elem: '#'+$(reals[j]).attr("id"),
+						type: 'datetime',
+						trigger: 'click'
+					});
+				}
+			}
+		}
+	});
+}
+
+function initData(){
+	var instanceId = $("#instanceId").val();
+	$.ajax({
+		url: "/act/processTask/historyList/"+instanceId,
+		post: "GET",
+		success: function (res) {
+			console.log(res);
+			var arr = res.data;
+			for (var i=0 ; i<arr.length ; i++){
+				var task = arr[i];
+				var taskId = task.taskId;
+				var taskDiv = $("#"+taskId);
+				var variables = task.variableVOList;
+				for (var j=0 ; j<variables.length ; j++){
+					var currentVatiable = variables[j];
+					var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
+					if(currentVatiableDiv.length == 1){
+						var localName = currentVatiableDiv[0].localName;
+						if(localName == "select"){
+							currentVatiableDiv.select2('val', currentVatiable.value);
+						}else{
+							currentVatiableDiv.val(currentVatiable.value);
+						}
+					}
+					currentVatiableDiv.attr("disabled", true);
+				}
+			}
+		}
+	})
+}
+</script>
+</body>
+</html>
