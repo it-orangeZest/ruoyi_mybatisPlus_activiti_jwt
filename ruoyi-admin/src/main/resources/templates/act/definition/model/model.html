@@ -170,18 +170,22 @@
         }
 
         function deployModel(id){
+            $.modal.loading("部署中...");
             $.ajax({
                 url: prefix + "/deployModel?id=" + id,
                 type: "get",
                 success: function (res) {
                     if(res.code == 0){
-                        $.modal.msgSuccess("部署成功");
                         $.table.refresh();
+                        $.modal.closeLoading();
+                        $.modal.msgSuccess("部署成功");
                     }else{
+                        $.modal.closeLoading();
                         $.modal.msgSuccess("部署失败");
                     }
                 },
                 error: function (res) {
+                    $.modal.closeLoading();
                     $.modal.msgSuccess("部署异常");
                 }
             })

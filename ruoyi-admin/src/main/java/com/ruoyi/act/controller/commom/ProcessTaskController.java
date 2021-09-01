@@ -8,12 +8,15 @@ import com.ruoyi.act.domain.VO.HisTaskVO;
 import com.ruoyi.act.domain.VO.MyTaskListVO;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.page.TableSupport;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.TCustForm;
+import com.ruoyi.system.service.ISysUserOnlineService;
+import com.ruoyi.system.service.ISysUserService;
 import com.ruoyi.system.service.ITCustFormService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowNode;
@@ -73,6 +76,9 @@ public class ProcessTaskController extends BaseController {
     @Autowired
     private RepositoryService repositoryService;
 
+    @Autowired
+    private ISysUserService iSysUserService;
+
     private String prefix = "act/definition/needDealt";
 
     @RequestMapping("/myTask")
@@ -119,6 +125,7 @@ public class ProcessTaskController extends BaseController {
 
     @RequestMapping("/goHisTasks/{instanceId}")
     public String goHisTasks(@PathVariable("instanceId") String instanceId, Model model){
+
         model.addAttribute("instanceId", instanceId);
         List<HistoricTaskInstance> historicTaskList = historyService
                 .createHistoricTaskInstanceQuery()
@@ -131,7 +138,7 @@ public class ProcessTaskController extends BaseController {
         for (HistoricTaskInstance historicTaskInstance : historicTaskList){
             HisTaskVO hisTaskVO = new HisTaskVO();
             hisTaskVO.setTaskId(historicTaskInstance.getId());
-            hisTaskVO.setTaskId(historicTaskInstance.getId());
+            hisTaskVO.setTaskName(historicTaskInstance.getName());
             hisTaskVO.setProcessDefinitionId(historicTaskInstance.getProcessDefinitionId());
             hisTaskVO.setProcessInstanceId(historicTaskInstance.getProcessInstanceId());
             hisTaskVO.setStartTime(historicTaskInstance.getStartTime());
@@ -154,6 +161,16 @@ public class ProcessTaskController extends BaseController {
                 }
             }
             hisTaskVO.setAssignee(assignee);
+
+            SysUser sysUser = this.iSysUserService.selectUserByLoginName(assignee);
+            if(sysUser != null){
+                if(StringUtils.isBlank(sysUser.getAvatar())){
+                    hisTaskVO.setAvatar("/img/profile.jpg");
+                } else {
+                    hisTaskVO.setAvatar(sysUser.getAvatar());
+                }
+                hisTaskVO.setAssigneeName(sysUser.getUserName());
+            }
             QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("form_key", formKey);
             TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
@@ -179,7 +196,9 @@ public class ProcessTaskController extends BaseController {
             HisTaskVO hisTaskVO = new HisTaskVO();
             String assignee = historicTaskInstance.getAssignee();
             Date endTime = historicTaskInstance.getEndTime();
+            //这个看似是对的，但是查出来是null，所以用下边的方式查
             Map<String, Object> taskLocalVariables = historicTaskInstance.getTaskLocalVariables();
+            //这个看似是对的，但是查出来是null，所以用下边的方式查
             Map<String, Object> processVariables = historicTaskInstance.getProcessVariables();
             String taskInstanceId = historicTaskInstance.getId();
 
@@ -200,6 +219,34 @@ public class ProcessTaskController extends BaseController {
         }
 
         return AjaxResult.success(hisTaskVOS);
+    }
+
+    @ResponseBody
+    @RequestMapping("/historyTaskForm/{taskId}")
+    public AjaxResult historyTaskForm(@PathVariable("taskId") String taskId){
+        Task currentTask = this.taskService.createTaskQuery()
+                .taskId(taskId)
+                .singleResult();
+        List<HistoricTaskInstance> historicTaskList = historyService
+                .createHistoricTaskInstanceQuery()
+                .processInstanceId(currentTask.getProcessInstanceId())
+                .taskDefinitionKey(currentTask.getTaskDefinitionKey())
+                .orderByHistoricTaskInstanceEndTime().desc()
+                .finished()
+                .list();
+
+        List<HistoricVariableInstance> list = null;
+        if(historicTaskList.size() > 0){
+            HistoricTaskInstance historicTaskInstance = historicTaskList.get(0);
+            //这个看似是对的，但是查出来是null，所以用下边的方式查
+            Map<String, Object> taskLocalVariables = historicTaskInstance.getTaskLocalVariables();
+            //查询历史任务节点的local参数
+            list = historyService.createHistoricVariableInstanceQuery().taskId(historicTaskInstance.getId())
+                    .list();
+
+        }
+
+        return AjaxResult.success(list);
     }
 
     @GetMapping("/processImg/{instanceId}")
@@ -397,20 +444,52 @@ public class ProcessTaskController extends BaseController {
         }*/
 
         String formKey = task.getFormKey();
+
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        String instanceId = task.getProcessInstanceId();
+        //查询此节点是否在当前流程实例中发生过
+        List<HistoricTaskInstance> historicTaskList = historyService
+                .createHistoricTaskInstanceQuery()
+                .processInstanceId(instanceId)
+                .taskDefinitionKey(taskDefinitionKey)
+                .orderByHistoricTaskInstanceEndTime().desc()
+                .finished()
+                .list();
+
+        //如果当前节点没有formKey，并且当前节点有历史，则去历史里拿formKey
         if(StringUtils.isBlank(formKey)){
-            Object o = this.taskService.getVariableLocal(task.getId(), "formKey");
-            if(o != null){
-                formKey = o.toString();
+            if(historicTaskList.size() > 0){
+                HistoricTaskInstance historicTaskInstance = historicTaskList.get(0);
+                List<HistoricVariableInstance> list = historyService
+                        .createHistoricVariableInstanceQuery()
+                        .taskId(historicTaskInstance.getId())
+                        .list();
+                for(HistoricVariableInstance e : list){
+
+                    if(StringUtils.isBlank(formKey) && StringUtils.equals(e.getVariableName(), "formKey")){
+                        if(e.getValue() != null){
+                            formKey = e.getValue().toString();
+                        }
+                    }
+                }
             }
         }
+
+        //如果当前节点没有formKey，并且当前节点没有历史，则选择公用表单
         if(StringUtils.isBlank(formKey)){
             formKey = "approveTask_common";
         }
 
+        //如果当前节点有历史，则说明任务被打回，设置打回标记，需要后边回填表单
+        if(historicTaskList.size() > 0){
+            model.addAttribute("isBack", true);
+        }
         QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("form_key", formKey);
         TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
         //model.addAttribute("fieldList", fieldList);
+        model.addAttribute("formKey", formKey);
+        model.addAttribute("instanceId", instanceId);
         model.addAttribute("taskId", task.getId());
         model.addAttribute("content", tCustForm.getContent());
         return prefix + "/taskForm";
@@ -429,7 +508,13 @@ public class ProcessTaskController extends BaseController {
 
         String taskId = (String)map.get("taskId");
         Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
+        //formKey以task节点配置的为准
         String formKey = task.getFormKey();
+        //如果task节点没有配置formKey，再以页面传递的formKey为准
+        if(StringUtils.isBlank(formKey)){
+            formKey = this.getRequest().getParameter("formKey");
+        }
+        //如果页面也没有传递formKey，则复制公用扁担key
         if(StringUtils.isBlank(formKey)){
             formKey = "approveTask_common";
         }

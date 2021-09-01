@@ -20,6 +20,9 @@ public class HisTaskVO {
     private String formKey;
     private String formContent;
     private String processName;
+    private String taskName;
+    private String avatar;
+    private String assigneeName;
     private List<HistoricVariableInstance> variableVOList = new ArrayList<>();
 
     public String getTaskId() {
@@ -100,5 +103,29 @@ public class HisTaskVO {
 
     public void setFormContent(String formContent) {
         this.formContent = formContent;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getAssigneeName() {
+        return assigneeName;
+    }
+
+    public void setAssigneeName(String assigneeName) {
+        this.assigneeName = assigneeName;
     }
 }

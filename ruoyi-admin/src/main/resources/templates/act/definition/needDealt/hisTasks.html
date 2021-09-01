@@ -7,7 +7,6 @@
 	<th:block th:include="include :: select2-css" />
 	<style>
 		.hisTask{
-			border: 1px solid grey;
 			border-radius: 5px;
 			margin-top: 5px;
 		}
@@ -22,16 +21,42 @@
 		}
 	</style>
 </head>
-<body class="white-bg">
-	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
-		<form class="m" id="form-instance-add">
+<body class="gray-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content" style="background-color: #f3f3f4;">
+		<form class="m">
 
 			<input type="hidden" id="instanceId" th:value="${instanceId}">
-			<div class="hisTask" th:each="tk:${hisTaskVOS}" th:id="${tk.taskId}">
+
+			<div id="ibox-content">
+				<div id="vertical-timeline" class="vertical-container light-timeline">
+					<div class="vertical-timeline-block hisTask" th:each="tk:${hisTaskVOS}" th:id="${tk.taskId}">
+						<div class="vertical-timeline-icon navy-bg">
+							<!--<i class="fa fa-briefcase"></i>-->
+							<img style="width: 34px;" th:src="${tk.avatar}" class="img-circle" alt="User Image">
+						</div>
+
+						<div class="vertical-timeline-content">
+							<h2 th:text="${tk.taskName + '节点'}"></h2>
+							<a href="javascript:void(0)" th:onclick="showForm([[${tk.taskId}]])" class="btn btn-sm btn-primary"> 详情</a>
+							<span class="vertical-date">
+								<span th:text="${tk.assigneeName+'（'+tk.assignee+'）'}"></span>
+								<br>
+								<small th:text="${#dates.format(tk.endTime, 'yyyy-MM-dd HH:mm')}"></small>
+							</span>
+							<div class="hisTask_conyent" style="clear: both; display: none" th:utext="${tk.formContent}"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+
+			<!--<div class="hisTask" th:each="tk:${hisTaskVOS}" th:id="${tk.taskId}">
 				<div class="hisTask_title1" th:text="${tk.assignee}"></div>
 				<div class="hisTask_title1" th:text="${#dates.format(tk.endTime, 'yyyy-MM-dd HH:mm')}"></div>
 				<div class="hisTask_conyent" th:utext="${tk.formContent}"></div>
-			</div>
+			</div>-->
 		</form>
 	</div>
 <th:block th:include="include :: footer" />
@@ -119,6 +144,10 @@ function initData(){
 			}
 		}
 	})
+}
+
+function showForm(taskId){
+	$("#"+taskId).find(".hisTask_conyent").toggle(200);
 }
 </script>
 </body>

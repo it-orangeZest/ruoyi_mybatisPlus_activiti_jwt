@@ -17,75 +17,13 @@
 					</select>
 				</div>
 			</div>-->
-			<input type="hidden" name="taskId" th:value="${taskId}">
-			<div th:utext="${content}"></div>
+			<input id="task_id" type="hidden" name="taskId" th:value="${taskId}">
+			<input id="form_key" type="hidden" name="formKey" th:value="${formKey}">
+			<div id="task_form" th:utext="${content}"></div>
 
-
-			<!--<div class="form-group" th:each="f : ${fieldList}">
-				<label class="col-sm-3 control-label">
-					<span style="color: red; ">*</span >
-					<span th:text="${f.getName()}"></span>
-				</label>
-				<div class="col-sm-8" th:if="${f.getTag()=='input'}">
-					<input th:name="${f.getId()}" class="form-control" type="text">
-				</div>
-				<div class="col-sm-8" th:if="${f.getTag()=='select' && f.getMultiple()=='multiple'}">
-					<select class="form-control m-b" th:name="${f.getId()}" th:with="type=${f.getData()}" multiple>
-						<option th:each="op : ${type}" th:value="${op.dictValue}" th:text="${op.dictLabel}"></option>
-					</select>
-				</div>
-				<div class="col-sm-8" th:if="${f.getTag()=='select' && f.getMultiple()!='multiple'}">
-					<select class="form-control m-b" th:name="${f.getId()}" th:with="type=${f.getData()}">
-						<option th:each="op : ${type}" th:value="${op.dictValue}" th:text="${op.dictLabel}"></option>
-					</select>
-				</div>
-				<div class="col-sm-8" th:if="${f.getTag()=='textarea'}">
-					<textarea th:name="${f.getId()}" maxlength="500" class="form-control" th:rows="${f.getRows()}"></textarea>
-				</div>
-				<div class="col-sm-8" th:if="${f.getTag()=='date'}">
-                	<input type="text" class="form-control laydate-demo" placeholder="yyyy-MM-dd HH:mm:ss">
-                </div>
-			</div>-->
-
-
-			<!--<div class="form-group">
-				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>标题：</label>
-				<div class="col-sm-8">
-					<input name="title" class="form-control" type="text" required>
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>原因：</label>
-				<div class="col-sm-8">
-					<textarea name="reason" class="form-control" required></textarea>
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>开始时间：</label>
-				<div class="col-sm-8">
-					<div class="input-group date">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-						<input name="startTime" class="form-control calcTotalSecondInput" placeholder="yyyy-MM-dd HH:mm" type="text" required>
-					</div>
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-3 control-label"><span style="color: red; ">*</span>结束时间：</label>
-				<div class="col-sm-8">
-					<div class="input-group date">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-						<input name="endTime" class="form-control calcTotalSecondInput" placeholder="yyyy-MM-dd HH:mm" type="text" required>
-					</div>
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-3 control-label">请假时长：</label>
-				<div class="col-sm-8">
-					<input name="totalTime" class="form-control" type="text" style="display: none;">
-					<input name="totalTimeText" class="form-control" type="text" readonly>
-				</div>
-			</div>-->
 		</form>
+
+		<iframe th:src="${'/act/processTask/goHisTasks/' + instanceId}" style="width: 100%; height: 500px; border: 0;"></iframe>
 	</div>
 <th:block th:include="include :: footer" />
 <th:block th:include="include :: datetimepicker-js" />
@@ -94,6 +32,7 @@
 <script th:inline="javascript">
 var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
 var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
+var isBack = [[${isBack}]];
 var prefix = ctx + "act/processTask";
 function submitHandler() {
 
@@ -106,6 +45,9 @@ var laydate;
 $(function(){
 	initSelect2();
 	initDatetime();
+	if(isBack || isBack == "true"){
+		initFormData();
+	}
 });
 
 /**
@@ -139,6 +81,37 @@ function initDatetime(){
 			}
 		}
 	});
+}
+
+function initFormData() {
+	let task_id = $("#task_id").val();
+	$.ajax({
+		url: "/act/processTask/historyTaskForm/"+task_id,
+		post: "GET",
+		success: function (res) {
+			console.log(res);
+			debugger;
+			var variables = res.data;
+
+
+				var taskDiv = $("#task_form");
+
+				for (var j=0 ; j<variables.length ; j++){
+					var currentVatiable = variables[j];
+					var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
+					if(currentVatiableDiv.length == 1){
+						var localName = currentVatiableDiv[0].localName;
+						if(localName == "select"){
+							currentVatiableDiv.val(currentVatiable.value).trigger("change");
+						}else{
+							currentVatiableDiv.val(currentVatiable.value);
+						}
+					}
+
+				}
+
+		}
+	})
 }
 </script>
 </body>
