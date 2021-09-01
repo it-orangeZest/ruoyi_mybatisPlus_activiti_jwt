@@ -57,7 +57,7 @@ public class ${ClassName}Controller extends BaseController
     public TableDataInfo list(${ClassName} ${className})
     {
         startPage();
-        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        List<${ClassName}> list = i${className}Service.select${ClassName}List(${className});
         return getDataTable(list);
     }
 #elseif($table.tree)
@@ -69,7 +69,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public List<${ClassName}> list(${ClassName} ${className})
     {
-        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        List<${ClassName}> list = i${className}Service.select${ClassName}List(${className});
         return list;
     }
 #end
@@ -83,7 +83,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public AjaxResult export(${ClassName} ${className})
     {
-        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        List<${ClassName}> list = i${className}Service.select${ClassName}List(${className});
         ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
         return util.exportExcel(list, "${functionName}数据");
     }
@@ -106,7 +106,7 @@ public class ${ClassName}Controller extends BaseController
     {
         if (StringUtils.isNotNull(${pkColumn.javaField}))
         {
-            mmap.put("${className}", ${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+            mmap.put("${className}", i${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
         }
         return prefix + "/add";
     }
@@ -121,7 +121,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public AjaxResult addSave(${ClassName} ${className})
     {
-        return toAjax(${className}Service.save(${className}));
+        return toAjax(i${className}Service.save(${className}));
     }
 
     /**
@@ -130,7 +130,7 @@ public class ${ClassName}Controller extends BaseController
     @GetMapping("/edit/{${pkColumn.javaField}}")
     public String edit(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField}, ModelMap mmap)
     {
-        ${ClassName} ${className} = ${className}Service.getById(${pkColumn.javaField});
+        ${ClassName} ${className} = i${className}Service.getById(${pkColumn.javaField});
         mmap.put("${className}", ${className});
         return prefix + "/edit";
     }
@@ -144,7 +144,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public AjaxResult editSave(${ClassName} ${className})
     {
-        return toAjax(${className}Service.updateById(${className}));
+        return toAjax(i${className}Service.updateById(${className}));
     }
 
 #if($table.crud || $table.sub)
@@ -157,7 +157,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public AjaxResult remove(String ids)
     {
-        return toAjax(${className}Service.removeByIds(Arrays.asList(ids.split(","))));
+        return toAjax(i${className}Service.removeByIds(Arrays.asList(ids.split(","))));
     }
 #elseif($table.tree)
     /**
@@ -169,7 +169,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public AjaxResult remove(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
     {
-        return toAjax(${className}Service.delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+        return toAjax(i${className}Service.delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
     }
 #end
 #if($table.tree)
@@ -183,7 +183,7 @@ public class ${ClassName}Controller extends BaseController
     {
         if (StringUtils.isNotNull(${pkColumn.javaField}))
         {
-            mmap.put("${className}", ${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+            mmap.put("${className}", i${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
         }
         return prefix + "/tree";
     }
@@ -195,7 +195,7 @@ public class ${ClassName}Controller extends BaseController
     @ResponseBody
     public List<Ztree> treeData()
     {
-        List<Ztree> ztrees = ${className}Service.select${ClassName}Tree();
+        List<Ztree> ztrees = i${className}Service.select${ClassName}Tree();
         return ztrees;
     }
 #end

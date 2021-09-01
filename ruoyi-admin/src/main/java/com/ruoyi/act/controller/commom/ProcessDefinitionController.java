@@ -2,8 +2,10 @@ package com.ruoyi.act.controller.commom;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.act.api.ProcessDefinitionService;
+import com.ruoyi.act.domain.TProcessFile;
 import com.ruoyi.act.domain.TProcessModel;
 import com.ruoyi.act.domain.VO.SysProcessVO;
+import com.ruoyi.act.service.ITProcessFileService;
 import com.ruoyi.act.service.ITProcessModelService;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.constant.Constants;
@@ -23,14 +25,12 @@ import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +63,9 @@ public class ProcessDefinitionController extends BaseController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private ITProcessFileService itProcessFileService;
 
     private String prefix = "act/definition";
     /**
@@ -246,5 +249,46 @@ public class ProcessDefinitionController extends BaseController {
         taskService.complete(task.getId(), map);
 
         return toAjax(1);
+    }
+
+    @PostMapping("/uploadProcessFile")
+    @ResponseBody
+    public AjaxResult upload(@RequestParam("processFile") MultipartFile file, String sysProcessId) {
+
+        TProcessModel tProcessModel = this.itProcessModelService.getById(sysProcessId);
+
+        String name = file.getOriginalFilename();
+        try {
+            String realName = FileUploadUtils.upload(RuoYiConfig.getProfile() + "/processFile", file);
+            TProcessFile tProcessFile = new TProcessFile();
+            if (StringUtils.isNotBlank(realName)) {
+                String realFilePath = RuoYiConfig.getProfile() + realName.substring(Constants.RESOURCE_PREFIX.length());
+
+                tProcessFile.setFileName(name);
+                tProcessFile.setPath(realFilePath);
+                tProcessFile.setRealName(realName);
+                tProcessFile.setProcessKey(tProcessModel.getProcessKey());
+                this.itProcessFileService.save(tProcessFile);
+
+            }
+            return AjaxResult.success(tProcessFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/removeFile")
+    @ResponseBody
+    public AjaxResult removeFile(String realName){
+        QueryWrapper<TProcessFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("real_name", realName);
+        TProcessFile tProcessFile = this.itProcessFileService.getOne(queryWrapper);
+        boolean b = this.itProcessFileService.removeById(tProcessFile.getId());
+        File file = new File(tProcessFile.getPath());
+        if(file.exists()){
+            file.delete();
+        }
+        return AjaxResult.success();
     }
 }
