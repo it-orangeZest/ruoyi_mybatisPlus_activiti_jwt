@@ -5,6 +5,33 @@
     <th:block th:include="include :: layout-latest-css" />
 	<th:block th:include="include :: datetimepicker-css" />
 	<th:block th:include="include :: select2-css" />
+	<style>
+		.download-file{
+			margin-right: 4px;
+			line-height: 30px;
+			cursor: pointer;
+			color: #17a2b8;
+		}
+		.remove-file{
+			margin-right: 10px;
+			line-height: 30px;
+			cursor: pointer;
+			color: red;
+		}
+		.a-file{
+			margin-right: 26px;
+			line-height: 30px;
+		}
+		.file-div{
+			background: aliceblue;
+			text-align: right;
+			font-size: 18px;
+			line-height: 30px;
+			margin-bottom: 3px;
+			width: 88%;
+			align-self: flex-end;
+		}
+	</style>
 </head>
 <body class="white-bg">
 	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
@@ -48,12 +75,24 @@ $(function(){
 			processData: false,
 			contentType: false,
 			success: function(result) {
+				debugger;
 				$("input[type='file']")[0].value='';
 				var processFile = result.data;
 				var container = $($("input[type='file']").parents(".drag-container")[0]);
 				var timestamp = new Date().getTime();
-				var file = '<div id="'+timestamp+'"><a href="'+processFile.realName+'">'+processFile.fileName+'</a><span class="glyphicon glyphicon-remove" onclick="removeFile(\''+processFile.realName+'\',\''+timestamp+'\')"></span></div>';
+				var file =
+						'<div class="file-div" id="'+timestamp+'">'+
+							'<a class="a-file" href="'+processFile.realName+'">'+processFile.fileName+'</a>'+
+							'<span class="glyphicon glyphicon-save download-file" onclick="downloadFile(\''+processFile.path+'\')"></span>'+
+							'<span class="glyphicon glyphicon-remove remove-file" onclick="removeFile(\''+processFile.realName+'\',\''+timestamp+'\')"></span>'+
+						'</div>';
 				container.append(file);
+				var file_input_real = container.find(".real");
+				if(file_input_real.val().trim()){
+					file_input_real.val(file_input_real.val().trim() + "," + processFile.realName);
+				}else{
+					file_input_real.val(processFile.realName);
+				}
 			}
 		})
 	})
@@ -92,11 +131,26 @@ function initDatetime(){
 	});
 }
 
+function downloadFile(path){
+	window.location.href = prefix + "/download?path=" + encodeURI(path);
+}
+
 function removeFile(realName, timestamp) {
 	$.ajax({
 		url: prefix + "/removeFile?realName="+realName,
 		success: function (res) {
+			debugger;
 			$("#"+timestamp).remove();
+			var container = $($("input[type='file']").parents(".drag-container")[0]);
+			var file_input_real = container.find(".real");
+			var realNames = file_input_real.val();
+			var realNames2 = (","+realNames+",").replace(","+realName+",", "");
+			if(realNames2 != ""){
+				var realNames3 = realNames2.substr(1, realNames2.length-2);
+				file_input_real.val(realNames3);
+			} else {
+				file_input_real.val("");
+			}
 		}
 	})
 }

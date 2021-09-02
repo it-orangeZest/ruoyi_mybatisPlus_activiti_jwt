@@ -19,6 +19,26 @@
 			background-color: white;
 			padding: 10px;
 		}
+
+		.download-file{
+			margin-right: 4px;
+			line-height: 30px;
+			cursor: pointer;
+			color: #17a2b8;
+		}
+		.a-file{
+			margin-right: 26px;
+			line-height: 30px;
+		}
+		.file-div{
+			background: aliceblue;
+			text-align: right;
+			font-size: 18px;
+			line-height: 30px;
+			margin-bottom: 3px;
+			width: 88%;
+			align-self: flex-end;
+		}
 	</style>
 </head>
 <body class="gray-bg">
@@ -79,6 +99,7 @@ $(function(){
 	initSelect2();
 	initDatetime();
 	initData();
+	initUploadFile();
 });
 
 /**
@@ -130,16 +151,42 @@ function initData(){
 				var variables = task.variableVOList;
 				for (var j=0 ; j<variables.length ; j++){
 					var currentVatiable = variables[j];
-					var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
-					if(currentVatiableDiv.length == 1){
-						var localName = currentVatiableDiv[0].localName;
-						if(localName == "select"){
-							currentVatiableDiv.val(currentVatiable.value).trigger("change");
-						}else{
-							currentVatiableDiv.val(currentVatiable.value);
+
+					//附件单独处理
+					if(currentVatiable.name=='processFile'){
+						var realNames = currentVatiable.value;
+						$.ajax({
+							url: "/act/processDefinition/getProcessFileByRealNames",
+							type: "post",
+							data: {"realNames": realNames},
+							success: function(res){
+								debugger;
+								var files = res.data;
+								for(var k=0 ; k<files.length ; k++){
+									var file = files[k];
+									var file_div = $($("input[name='processFile']").parents(".drag-container")[0]);
+									var str =
+											'<div class="file-div">'+
+												'<span class="a-file">'+file.fileName+'</span>'+
+												'<span class="glyphicon glyphicon-save download-file" onclick="downloadFile(\''+file.path+'\')"></span>'+
+											'</div>';
+									file_div.append(str);
+								}
+							}
+						})
+
+					} else {
+						var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
+						if(currentVatiableDiv.length == 1){
+							var localName = currentVatiableDiv[0].localName;
+							if(localName == "select"){
+								currentVatiableDiv.val(currentVatiable.value).trigger("change");
+							}else{
+								currentVatiableDiv.val(currentVatiable.value);
+							}
 						}
+						currentVatiableDiv.attr("disabled", true);
 					}
-					currentVatiableDiv.attr("disabled", true);
 				}
 			}
 		}
@@ -148,6 +195,15 @@ function initData(){
 
 function showForm(taskId){
 	$("#"+taskId).find(".hisTask_conyent").toggle(200);
+}
+
+function initUploadFile() {
+	var inputFile = $("input[type='file']");
+	inputFile.hide();
+}
+
+function downloadFile(path){
+	window.location.href = ctx + "act/processDefinition/download?path=" + encodeURI(path);
 }
 </script>
 </body>

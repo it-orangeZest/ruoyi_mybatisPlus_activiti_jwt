@@ -14,6 +14,8 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.uuid.UUID;
 import com.ruoyi.system.domain.TCustForm;
 import com.ruoyi.system.service.ITCustFormService;
 import org.activiti.engine.IdentityService;
@@ -23,6 +25,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author badcat
@@ -219,12 +219,16 @@ public class ProcessDefinitionController extends BaseController {
     @ResponseBody
     public AjaxResult startSysProcessByForm(HttpServletRequest request){
         String sysProcessId = "";
+        String uploadFiles = "";
         Map<String, String[]> parameterMap = request.getParameterMap();
         Map<String, Object> map = new HashMap<>();
         for(Map.Entry<String, String[]> entry : parameterMap.entrySet() ) {
             map.put(entry.getKey(), entry.getValue()[0]);
             if(StringUtils.equals("sysProcessId", entry.getKey())){
                 sysProcessId = entry.getValue()[0];
+            }
+            if(StringUtils.equals("processFile", entry.getKey())){
+                uploadFiles = entry.getValue()[0];
             }
         }
 
@@ -248,6 +252,20 @@ public class ProcessDefinitionController extends BaseController {
         //完成节点
         taskService.complete(task.getId(), map);
 
+        if(StringUtils.isNotBlank(uploadFiles)){
+            String[] arr = uploadFiles.split(",");
+            for (String fileRealName : arr){
+                QueryWrapper<TProcessFile> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("real_name", fileRealName);
+
+                TProcessFile one = this.itProcessFileService.getOne(queryWrapper);
+                one.setInstanceId(processInstance.getId());
+                one.setTaskId(task.getId());
+                this.itProcessFileService.updateById(one);
+            }
+        }
+
+
         return toAjax(1);
     }
 
@@ -259,14 +277,14 @@ public class ProcessDefinitionController extends BaseController {
 
         String name = file.getOriginalFilename();
         try {
-            String realName = FileUploadUtils.upload(RuoYiConfig.getProfile() + "/processFile", file);
+            String realNamePath = FileUploadUtils.upload(RuoYiConfig.getProfile() + "/processFile", file);
             TProcessFile tProcessFile = new TProcessFile();
-            if (StringUtils.isNotBlank(realName)) {
-                String realFilePath = RuoYiConfig.getProfile() + realName.substring(Constants.RESOURCE_PREFIX.length());
+            if (StringUtils.isNotBlank(realNamePath)) {
+                String realFilePath = RuoYiConfig.getProfile() + realNamePath.substring(Constants.RESOURCE_PREFIX.length());
 
                 tProcessFile.setFileName(name);
                 tProcessFile.setPath(realFilePath);
-                tProcessFile.setRealName(realName);
+                tProcessFile.setRealName(realNamePath.substring(realNamePath.lastIndexOf("/")+1));
                 tProcessFile.setProcessKey(tProcessModel.getProcessKey());
                 this.itProcessFileService.save(tProcessFile);
 
@@ -275,6 +293,23 @@ public class ProcessDefinitionController extends BaseController {
         } catch (Exception e) {
             e.printStackTrace();
             return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/download")
+    @ResponseBody
+    public void download(String path, HttpServletResponse response){
+        try
+        {
+            String ex = path.substring(path.lastIndexOf("."));
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            FileUtils.setAttachmentResponseHeader(response, UUID.randomUUID()+ex);
+            FileUtils.writeBytes(path, response.getOutputStream());
+
+        }
+        catch (Exception e)
+        {
+            logger.error("下载文件失败", e);
         }
     }
 
@@ -290,5 +325,17 @@ public class ProcessDefinitionController extends BaseController {
             file.delete();
         }
         return AjaxResult.success();
+    }
+
+
+    @PostMapping("/getProcessFileByRealNames")
+    @ResponseBody
+    public AjaxResult getProcessFileByRealNames(String realNames){
+        String[] split = realNames.split(",");
+        List<String> list = Arrays.asList(split);
+        QueryWrapper<TProcessFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("real_name", list);
+        List<TProcessFile> fileList = this.itProcessFileService.list(queryWrapper);
+        return AjaxResult.success(fileList);
     }
 }
