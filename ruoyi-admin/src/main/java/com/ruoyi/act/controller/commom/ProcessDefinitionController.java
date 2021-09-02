@@ -19,6 +19,7 @@ import com.ruoyi.common.utils.uuid.UUID;
 import com.ruoyi.system.domain.TCustForm;
 import com.ruoyi.system.service.ITCustFormService;
 import org.activiti.engine.IdentityService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -63,6 +64,9 @@ public class ProcessDefinitionController extends BaseController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     @Autowired
     private ITProcessFileService itProcessFileService;
@@ -271,7 +275,7 @@ public class ProcessDefinitionController extends BaseController {
 
     @PostMapping("/uploadProcessFile")
     @ResponseBody
-    public AjaxResult upload(@RequestParam("processFile") MultipartFile file, String sysProcessId) {
+    public AjaxResult uploadProcessFile(@RequestParam("processFile") MultipartFile file, String sysProcessId) {
 
         TProcessModel tProcessModel = this.itProcessModelService.getById(sysProcessId);
 
@@ -296,14 +300,45 @@ public class ProcessDefinitionController extends BaseController {
         }
     }
 
+    @PostMapping("/uploadProcessFile2")
+    @ResponseBody
+    public AjaxResult uploadProcessFile2(@RequestParam("processFile") MultipartFile file, String taskId) {
+
+        Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
+        String processDefinitionId = task.getProcessDefinitionId();
+        ProcessDefinition processDefinition = this.repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(processDefinitionId)
+                .singleResult();
+        String key = processDefinition.getKey();
+
+        String name = file.getOriginalFilename();
+        try {
+            String realNamePath = FileUploadUtils.upload(RuoYiConfig.getProfile() + "/processFile", file);
+            TProcessFile tProcessFile = new TProcessFile();
+            if (StringUtils.isNotBlank(realNamePath)) {
+                String realFilePath = RuoYiConfig.getProfile() + realNamePath.substring(Constants.RESOURCE_PREFIX.length());
+
+                tProcessFile.setFileName(name);
+                tProcessFile.setPath(realFilePath);
+                tProcessFile.setRealName(realNamePath.substring(realNamePath.lastIndexOf("/")+1));
+                tProcessFile.setProcessKey(key);
+                this.itProcessFileService.save(tProcessFile);
+
+            }
+            return AjaxResult.success(tProcessFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
     @GetMapping("/download")
     @ResponseBody
-    public void download(String path, HttpServletResponse response){
+    public void download(String path, String fileName, HttpServletResponse response){
         try
         {
-            String ex = path.substring(path.lastIndexOf("."));
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            FileUtils.setAttachmentResponseHeader(response, UUID.randomUUID()+ex);
+            FileUtils.setAttachmentResponseHeader(response, fileName);
             FileUtils.writeBytes(path, response.getOutputStream());
 
         }

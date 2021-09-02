@@ -5,6 +5,33 @@
     <th:block th:include="include :: layout-latest-css" />
 	<th:block th:include="include :: datetimepicker-css" />
 	<th:block th:include="include :: select2-css" />
+	<style>
+		.download-file{
+			margin-right: 4px;
+			line-height: 30px;
+			cursor: pointer;
+			color: #17a2b8;
+		}
+		.remove-file{
+			margin-right: 10px;
+			line-height: 30px;
+			cursor: pointer;
+			color: red;
+		}
+		.a-file{
+			margin-right: 26px;
+			line-height: 30px;
+		}
+		.file-div{
+			background: aliceblue;
+			text-align: right;
+			font-size: 14px;
+			line-height: 30px;
+			margin-bottom: 3px;
+			width: 84%;
+			align-self: flex-end;
+		}
+	</style>
 </head>
 <body class="gray-bg">
 	<div class="wrapper wrapper-content animated fadeInRight ibox-content" style="background-color: rgb(243, 243, 244);">
@@ -40,120 +67,181 @@
 					</div>
 				</div>
 			</div>
-
-
 		</div>
-	</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	</div>
 <th:block th:include="include :: footer" />
 <th:block th:include="include :: datetimepicker-js" />
 <th:block th:include="include :: layout-latest-js" />
 <th:block th:include="include :: select2-js" />
 <script th:inline="javascript">
-var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
-var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
-var isBack = [[${isBack}]];
-var prefix = ctx + "act/processTask";
-function submitHandler() {
+	var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
+	var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
+	var isBack = [[${isBack}]];
+	var prefix = ctx + "act/processTask";
+	function submitHandler() {
 
-		$.operate.save(prefix + "/complete", $('#form-instance-add').serialize());
+			$.operate.save(prefix + "/complete", $('#form-instance-add').serialize());
 
-}
-
-var laydate;
-
-$(function(){
-	initSelect2();
-	initDatetime();
-	if(isBack || isBack == "true"){
-		initFormData();
 	}
-});
 
-/**
- * 初始化select2组件
- */
-function initSelect2(){
-	$(".select2").remove();
-	$(".drag-item select").removeClass("select2-hidden-accessible");
-	$(".drag-item select option").removeAttr("data-select2-id");
-	$(".drag-item select").select2();
-}
+	var laydate;
 
-/**
- * 初始化日期组件
- */
-function initDatetime(){
-	var arr = $(".drag-item");
-	layui.use('laydate', function() {
-		laydate = layui.laydate;
-		for(var i=0 ; i<arr.length ; i++){
-			var c = arr[i];
-			if(c.dataset.type == "drag_datetime"){
-				var reals = $(c).find(".real");
-				for(var j=0 ; j<reals.length ; j++){
-					laydate.render({
-						elem: '#'+$(reals[j]).attr("id"),
-						type: 'datetime',
-						trigger: 'click'
-					});
+	$(function(){
+		initSelect2();
+		initDatetime();
+		if(isBack || isBack == "true"){
+			initFormData();
+		}
+		$("input[type='file']").change(function(){
+			debugger
+			var formdata = new FormData();
+			formdata.append("processFile", $('input[type=file]')[0].files[0]);
+			formdata.append("taskId", $("#task_id").val());
+			$.ajax({
+				url: "/act/processDefinition/uploadProcessFile2",
+				data: formdata,
+				type: "post",
+				processData: false,
+				contentType: false,
+				success: function(result) {
+					debugger;
+					$("input[type='file']")[0].value='';
+					var processFile = result.data;
+					var container = $($("input[type='file']").parents(".drag-container")[0]);
+					var timestamp = new Date().getTime();
+					var file =
+							'<div class="file-div" id="'+timestamp+'">'+
+							'<span class="a-file">'+processFile.fileName+'</span>'+
+							'<span class="glyphicon glyphicon-save download-file" onclick="downloadFile(\''+processFile.path+'\',\''+processFile.fileName+'\')"></span>'+
+							'<span class="glyphicon glyphicon-remove remove-file" onclick="removeFile(\''+processFile.realName+'\',\''+timestamp+'\')"></span>'+
+							'</div>';
+					container.append(file);
+					var file_input_real = container.find(".real");
+					if(file_input_real.val().trim()){
+						file_input_real.val(file_input_real.val().trim() + "," + processFile.realName);
+					}else{
+						file_input_real.val(processFile.realName);
+					}
+				}
+			})
+		})
+	});
+
+	/**
+	 * 初始化select2组件
+	 */
+	function initSelect2(){
+		$(".select2").remove();
+		$(".drag-item select").removeClass("select2-hidden-accessible");
+		$(".drag-item select option").removeAttr("data-select2-id");
+		$(".drag-item select").select2();
+	}
+
+	/**
+	 * 初始化日期组件
+	 */
+	function initDatetime(){
+		var arr = $(".drag-item");
+		layui.use('laydate', function() {
+			laydate = layui.laydate;
+			for(var i=0 ; i<arr.length ; i++){
+				var c = arr[i];
+				if(c.dataset.type == "drag_datetime"){
+					var reals = $(c).find(".real");
+					for(var j=0 ; j<reals.length ; j++){
+						laydate.render({
+							elem: '#'+$(reals[j]).attr("id"),
+							type: 'datetime',
+							trigger: 'click'
+						});
+					}
 				}
 			}
-		}
-	});
-}
+		});
+	}
 
-function initFormData() {
-	let task_id = $("#task_id").val();
-	$.ajax({
-		url: "/act/processTask/historyTaskForm/"+task_id,
-		post: "GET",
-		success: function (res) {
-			console.log(res);
-			debugger;
-			var variables = res.data;
+	function initFormData() {
+		let task_id = $("#task_id").val();
+		$.ajax({
+			url: "/act/processTask/historyTaskForm/"+task_id,
+			post: "GET",
+			success: function (res) {
+				console.log(res);
+				debugger;
+				var variables = res.data;
 
 
-				var taskDiv = $("#task_form");
+					var taskDiv = $("#task_form");
 
-				for (var j=0 ; j<variables.length ; j++){
-					var currentVatiable = variables[j];
-					var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
-					if(currentVatiableDiv.length == 1){
-						var localName = currentVatiableDiv[0].localName;
-						if(localName == "select"){
-							currentVatiableDiv.val(currentVatiable.value).trigger("change");
-						}else{
-							currentVatiableDiv.val(currentVatiable.value);
+					for (var j=0 ; j<variables.length ; j++){
+						var currentVatiable = variables[j];
+
+						//附件单独处理
+						if(currentVatiable.name=='processFile'){
+							var realNames = currentVatiable.value;
+							var file_div = $($("input[name='processFile']").parents(".drag-container")[0]);
+							file_div.find(".real").val(realNames);
+							$.ajax({
+								url: "/act/processDefinition/getProcessFileByRealNames",
+								type: "post",
+								data: {"realNames": realNames},
+								success: function(res){
+									debugger;
+									var files = res.data;
+									for(var k=0 ; k<files.length ; k++){
+										var file = files[k];
+										var timestamp = new Date().getTime()+""+k;
+										var str =
+												'<div class="file-div" id="'+timestamp+'">'+
+												'<span class="a-file">'+file.fileName+'</span>'+
+												'<span class="glyphicon glyphicon-save download-file" onclick="downloadFile(\''+file.path+'\',\''+file.fileName+'\')"></span>'+
+												'<span class="glyphicon glyphicon-remove remove-file" onclick="removeFile(\''+file.realName+'\',\''+timestamp+'\')"></span>'+
+												'</div>';
+										file_div.append(str);
+									}
+								}
+							})
+
+						} else {
+							var currentVatiableDiv = taskDiv.find("[name='"+currentVatiable.name+"']");
+							if(currentVatiableDiv.length == 1){
+								var localName = currentVatiableDiv[0].localName;
+								if(localName == "select"){
+									currentVatiableDiv.val(currentVatiable.value).trigger("change");
+								}else{
+									currentVatiableDiv.val(currentVatiable.value);
+								}
+							}
 						}
 					}
 
-				}
+			}
+		})
+	}
 
-		}
-	})
-}
+	function removeFile(realName, timestamp) {
+		$.ajax({
+			url: "/act/processDefinition/removeFile?realName="+realName,
+			success: function (res) {
+				debugger;
+				$("#"+timestamp).remove();
+				var container = $($("input[type='file']").parents(".drag-container")[0]);
+				var file_input_real = container.find(".real");
+				var realNames = file_input_real.val();
+				var realNames2 = (","+realNames+",").replace(","+realName+",", "");
+				if(realNames2 != ""){
+					var realNames3 = realNames2.substr(1, realNames2.length-2);
+					file_input_real.val(realNames3);
+				} else {
+					file_input_real.val("");
+				}
+			}
+		})
+	}
+
+	function downloadFile(path, fileName){
+		window.location.href = ctx + "act/processDefinition/download?path=" + encodeURI(path) + "&fileName=" + fileName;
+	}
 </script>
 </body>
 </html>
