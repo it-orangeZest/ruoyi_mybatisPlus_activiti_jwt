@@ -91,7 +91,7 @@
                             </div>
                             <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
                                 <div>
-                                    <form class="form form-horizontal m-t">
+                                    <form class="form form-horizontal m-t" th:id="form-form-add">
                                         <input name="deptId" type="hidden" id="treeId"/>
                                         <div class="ibox">
                                             <div class="ibox-title">
@@ -102,14 +102,14 @@
                                                     <label class="col-sm-3 control-label" >流程key：</label>
 
                                                     <div class="col-sm-8" >
-                                                        <input type="text" name="processKey" placeholder="流程key" class="form-control">
+                                                        <input id="processKey" type="text" name="processKey" placeholder="流程key" class="form-control">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <label class="col-sm-3 control-label" >流程名称：</label>
 
                                                     <div class="col-sm-8" >
-                                                        <input type="text" name="name" placeholder="流程名称" class="form-control">
+                                                        <input id="name" type="text" name="name" placeholder="流程名称" class="form-control">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -146,11 +146,70 @@
     var prefix = ctx + "act/definition/model";
     var parentTabe = [[${windowName}]];
     $("#form-form-add").validate({
-        focusCleanup: true
+        focusCleanup: true,
+        onkeyup: false,
+        rules: {
+            processKey: {
+                required: true,
+                remote: {
+                    url: prefix + "/processKeyIsExist",     //后台处理程序
+                    type: "post",               //数据发送方式
+                    data: {                     //要传递的数据
+                        processKey: function() {
+                            return $("#processKey").val();
+                        }
+                    },
+                    dataFilter: function (res, type) {
+                        var arr = eval("("+res+")");
+                        if(arr.code == 0){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            },
+            name: {
+                required: true,
+                remote: {
+                    url: prefix + "/nameIsExist",     //后台处理程序
+                    type: "post",               //数据发送方式
+                    data: {                     //要传递的数据
+                        name: function () {
+                            return $("#name").val();
+                        }
+                    },
+                    dataFilter: function (res, type) {
+                        var arr = eval("(" + res + ")");
+                        if (arr.code == 0) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            },
+            treeName: {
+                required: true
+            }
+        },
+        messages: {
+            processKey: {
+                required: "请输入流程key",
+                remote: "流程key已存在，请修改"
+            },
+            name: {
+                required: "请输入流程名称",
+                remote: "流程名称已存在，请修改"
+            },
+            treeName: {
+                required: "请选择所属部门"
+            }
+        }
     });
 
     function submitHandler() {
-        if ($.validate.form()) {
+        if ($.validate.form("form-form-add")) {
             $.operate.save(prefix + "/add", $('#form-form-add').serialize());
         }
     }
@@ -194,19 +253,23 @@
     });
 
     function submit(){
-        var data = {};
-        $('.form').each(function (index, form){
-            // 这里可以使用$.common.formToJSON(formId);  需要在form上加id
-            $.each($(form).serializeArray(), function(i, field) {
-                if(data[field.name]) {
-                    data[field.name] += ("," + field.value);
-                } else {
-                    data[field.name] = field.value;
-                }
+        debugger;
+        if ($.validate.form("form-form-add")) {
+            var data = {};
+            $('.form').each(function (index, form){
+                // 这里可以使用$.common.formToJSON(formId);  需要在form上加id
+                $.each($(form).serializeArray(), function(i, field) {
+                    if(data[field.name]) {
+                        data[field.name] += ("," + field.value);
+                    } else {
+                        data[field.name] = field.value;
+                    }
+                });
             });
-        });
-        $("#bpmnIframe")[0].contentWindow.formData = data;
-        $("#bpmnIframe")[0].contentWindow.document.getElementById("saveBpmnModel").click()
+            $("#bpmnIframe")[0].contentWindow.formData = data;
+            $("#bpmnIframe")[0].contentWindow.document.getElementById("saveBpmnModel").click()
+        }
+
     }
     // 显示步骤时将触发事件
     $("#smartwizard").on("showStep", function(e, anchorObject, stepNumber, stepDirection, stepPosition) {

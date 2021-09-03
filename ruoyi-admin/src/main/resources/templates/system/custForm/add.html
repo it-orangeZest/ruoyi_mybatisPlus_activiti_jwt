@@ -9,13 +9,13 @@
             <div class="form-group">    
                 <label class="col-sm-3 control-label">表单key：</label>
                 <div class="col-sm-8">
-                    <input name="formKey" class="form-control" type="text">
+                    <input id="formKey" name="formKey" class="form-control" type="text">
                 </div>
             </div>
             <div class="form-group">    
                 <label class="col-sm-3 control-label">表单名：</label>
                 <div class="col-sm-8">
-                    <input name="formName" class="form-control" type="text">
+                    <input id="formName" name="formName" class="form-control">
                 </div>
             </div>
             <div class="form-group">    
@@ -47,7 +47,43 @@
     <script th:inline="javascript">
         var prefix = ctx + "custForm/form"
         $("#form-form-add").validate({
-            focusCleanup: true
+            focusCleanup: true,
+            onkeyup: false,
+            rules: {
+                formKey: {
+                    required: true,
+                    remote: {
+                        url: prefix + "/formKeyIsExist",     //后台处理程序
+                        type: "post",               //数据发送方式
+                        data: {                     //要传递的数据
+                            formKey: function() {
+                                return $("#formKey").val();
+                            }
+                        },
+                        dataFilter: function (res, type) {
+                            debugger;
+                            var arr = eval("("+res+")");
+                            if(arr.code == 0){
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                },
+                formName: {
+                    required: true
+                }
+            },
+            messages: {
+                formKey: {
+                    required: "请输入表单key",
+                    remote: "表单key已存在，请修改"
+                },
+                formName: {
+                    required: "请输入表单名"
+                }
+            }
         });
 
         function submitHandler() {

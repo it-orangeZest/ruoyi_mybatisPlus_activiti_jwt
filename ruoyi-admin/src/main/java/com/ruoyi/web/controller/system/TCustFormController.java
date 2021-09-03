@@ -188,4 +188,17 @@ public class TCustFormController extends BaseController
     public TCustForm getFormById(String id){
         return this.tCustFormService.getById(id);
     }
+
+    @ResponseBody()
+    @PostMapping("/formKeyIsExist")
+    public AjaxResult formKeyIsExist(String formKey) {
+        QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("form_key", formKey);
+        List<TCustForm> list = this.tCustFormService.list(queryWrapper);
+        if(list.size() > 0){
+            return AjaxResult.error();
+        } else {
+            return AjaxResult.success();
+        }
+    }
 }

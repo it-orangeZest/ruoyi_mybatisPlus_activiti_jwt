@@ -1,5 +1,6 @@
 package com.ruoyi.act.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.act.api.ProcessDefinitionService;
 import com.ruoyi.act.domain.TProcessModel;
 import com.ruoyi.act.service.ITProcessModelService;
@@ -348,5 +349,31 @@ public class TProcessModelController extends BaseController
             desc.getParentFile().mkdirs();
         }
         return downloadPath;
+    }
+
+    @ResponseBody()
+    @PostMapping("/processKeyIsExist")
+    public AjaxResult processKeyIsExist(String processKey) {
+        QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("process_key", processKey);
+        List<TProcessModel> list = this.itProcessModelService.list(queryWrapper);
+        if(list.size() > 0){
+            return AjaxResult.error();
+        } else {
+            return AjaxResult.success();
+        }
+    }
+
+    @ResponseBody()
+    @PostMapping("/nameIsExist")
+    public AjaxResult nameIsExist(String name) {
+        QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", name);
+        List<TProcessModel> list = this.itProcessModelService.list(queryWrapper);
+        if(list.size() > 0){
+            return AjaxResult.error();
+        } else {
+            return AjaxResult.success();
+        }
     }
 }
