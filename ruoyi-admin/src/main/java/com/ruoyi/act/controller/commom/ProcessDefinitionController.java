@@ -117,15 +117,17 @@ public class ProcessDefinitionController extends BaseController {
             SysProcessVO vo = new SysProcessVO();
             ProcessDefinition definition = this.processDefinitionService.getDefinitionByKey(e.getProcessKey());
 
-            vo.setDeptId(e.getDeptId());
-            vo.setProcessModelId(e.getId());
-            vo.setDefinitionId(definition.getId());
-            vo.setProcesskey(e.getProcessKey());
-            vo.setName(e.getName());
-            vo.setFormId(e.getFormId());
-            vo.setResourceName(definition.getResourceName());
-            vo.setDiagramResourceName(definition.getDiagramResourceName());
-            voList.add(vo);
+            if(definition != null){
+                vo.setDeptId(e.getDeptId());
+                vo.setProcessModelId(e.getId());
+                vo.setDefinitionId(definition.getId());
+                vo.setProcesskey(e.getProcessKey());
+                vo.setName(e.getName());
+                vo.setFormId(e.getFormId());
+                vo.setResourceName(definition.getResourceName());
+                vo.setDiagramResourceName(definition.getDiagramResourceName());
+                voList.add(vo);
+            }
         }
 
         model.addAttribute("sysProcessList", voList);

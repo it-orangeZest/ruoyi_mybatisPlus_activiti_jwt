@@ -144,7 +144,7 @@ function removeFile(realName, timestamp) {
 			var container = $($("input[type='file']").parents(".drag-container")[0]);
 			var file_input_real = container.find(".real");
 			var realNames = file_input_real.val();
-			var realNames2 = (","+realNames+",").replace(","+realName+",", "");
+			var realNames2 = (","+realNames+",").replace(","+realName+",", ",");
 			if(realNames2 != ""){
 				var realNames3 = realNames2.substr(1, realNames2.length-2);
 				file_input_real.val(realNames3);
