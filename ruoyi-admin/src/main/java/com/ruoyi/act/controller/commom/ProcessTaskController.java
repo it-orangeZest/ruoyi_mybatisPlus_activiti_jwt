@@ -170,11 +170,16 @@ public class ProcessTaskController extends BaseController {
                     hisTaskVO.setAvatar(sysUser.getAvatar());
                 }
                 hisTaskVO.setAssigneeName(sysUser.getUserName());
+            } else {
+                hisTaskVO.setAvatar("/img/profile.jpg");
+                hisTaskVO.setAssigneeName("无人拾取任务");
             }
-            QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("form_key", formKey);
-            TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
-            hisTaskVO.setFormContent(tCustForm.getContent());
+            if(StringUtils.isNotBlank(formKey)){
+                QueryWrapper<TCustForm> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("form_key", formKey);
+                TCustForm tCustForm = this.itCustFormService.getOne(queryWrapper);
+                hisTaskVO.setFormContent(tCustForm.getContent());
+            }
             hisTaskVOS.add(hisTaskVO);
         }
         model.addAttribute("hisTaskVOS", hisTaskVOS);
@@ -442,6 +447,10 @@ public class ProcessTaskController extends BaseController {
         		fieldList.add(fieldSuper);
         	}
         }*/
+
+        if(task == null){
+            return prefix + "/taskIsUnExsit.html";
+        }
 
         String formKey = task.getFormKey();
 

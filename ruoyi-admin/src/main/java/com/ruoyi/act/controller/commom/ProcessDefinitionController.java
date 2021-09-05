@@ -110,7 +110,7 @@ public class ProcessDefinitionController extends BaseController {
 
         QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("status", "act_model_status_002", "act_model_status_003", "act_model_status_004")
-                .orderByDesc("create_time");
+                .orderByAsc("create_time");
         List<TProcessModel> list = this.itProcessModelService.list(queryWrapper);
 
         for(TProcessModel e : list){
@@ -210,10 +210,35 @@ public class ProcessDefinitionController extends BaseController {
     public String startForm(String processModelId, Model model){
         TProcessModel tProcessModel = this.itProcessModelService.getById(processModelId);
         Long formId = tProcessModel.getFormId();
+
         TCustForm tCustForm = this.itCustFormService.getById(formId);
         model.addAttribute("sysProcessId", processModelId);
         model.addAttribute("content", tCustForm.getContent());
         return prefix + "/startProcess/startForm";
+
+    }
+
+    /**
+     * 完成流程发起表单后，发起流程
+     * @param request
+     * @return
+     */
+    @RequestMapping("/startSysProcessByNullForm")
+    @ResponseBody
+    public AjaxResult startSysProcessByNullForm(String processModelId){
+
+        TProcessModel processModel = this.itProcessModelService.getById(processModelId);
+        String processkey = processModel.getProcessKey();
+
+        //发起流程
+        String loginName = ShiroUtils.getLoginName();
+        //设置发起人
+        identityService.setAuthenticatedUserId(loginName);
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("starter", loginName);
+        ProcessInstance processInstance = this.runtimeService.startProcessInstanceByKey(processkey, map1);
+
+        return toAjax(1);
     }
 
     /**

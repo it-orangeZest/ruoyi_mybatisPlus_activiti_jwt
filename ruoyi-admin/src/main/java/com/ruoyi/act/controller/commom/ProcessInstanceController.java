@@ -15,6 +15,8 @@ import org.activiti.engine.HistoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.activiti.engine.runtime.Execution;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author badcat
@@ -131,6 +134,30 @@ public class ProcessInstanceController extends BaseController {
     public AjaxResult deleteInstanceById(@RequestParam("instanceId") String instanceId){
         runtimeService.deleteProcessInstance(instanceId,"发起人删除");
         historyService.deleteHistoricProcessInstance(instanceId);
+        return AjaxResult.success();
+    }
+
+    @ResponseBody
+    @RequestMapping("/backTask")
+    public AjaxResult backTask(@RequestParam("instanceId") String instanceId){
+        ProcessInstance processInstance = this.runtimeService.createProcessInstanceQuery()
+                .processInstanceId(instanceId)
+                .singleResult();
+
+        Object o = runtimeService.getVariable(instanceId, "backMsgKey");
+        String backMsgKey = "";
+        if(o != null){
+            backMsgKey = o.toString();
+        }
+        if(StringUtils.isBlank(backMsgKey)){
+            return AjaxResult.error();
+        }
+        Execution execution = this.runtimeService.createExecutionQuery()
+                .messageEventSubscriptionName(backMsgKey)
+                .processInstanceId(instanceId)
+                .singleResult();
+
+        this.runtimeService.messageEventReceived(backMsgKey, execution.getId());
         return AjaxResult.success();
     }
 }

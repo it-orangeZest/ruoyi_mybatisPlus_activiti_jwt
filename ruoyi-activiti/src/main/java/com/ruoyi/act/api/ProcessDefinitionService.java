@@ -218,7 +218,9 @@ public class ProcessDefinitionService {
      */
     public Page<ProcessDefinitionVO> getDeployManagerList(ProcessDefinitionVO processDefinition, Integer pageNum, Integer pageSize) {
         Page<ProcessDefinitionVO> list = new Page<>();
-        ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery();
+        ProcessDefinitionQuery processDefinitionQuery = repositoryService
+                .createProcessDefinitionQuery()
+                .orderByDeploymentId().asc();
         processDefinitionQuery.orderByProcessDefinitionId().orderByProcessDefinitionVersion().desc();
         if (com.ruoyi.common.utils.StringUtils.isNotBlank(processDefinition.getName())) {
             processDefinitionQuery.processDefinitionNameLike("%" + processDefinition.getName() + "%");
@@ -232,7 +234,8 @@ public class ProcessDefinitionService {
 
         List<ProcessDefinition> processDefinitionList;
         if (pageNum != null && pageSize != null) {
-            processDefinitionList = processDefinitionQuery.listPage((pageNum - 1) * pageSize, pageSize);
+            processDefinitionList = processDefinitionQuery
+                    .listPage((pageNum - 1) * pageSize, pageSize);
             list.setTotal(processDefinitionQuery.count());
             list.setPageNum(pageNum);
             list.setPageSize(pageSize);

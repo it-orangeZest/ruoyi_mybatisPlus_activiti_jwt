@@ -6,7 +6,7 @@
 <body class="gray-bg">
 <div class="container-div" style="padding: 20px 28px;">
     <div class="row">
-        <div class="col-sm-4" th:each="df : ${sysProcessList}" th:onclick="$.modal.open([[${df.getName()}]],[['/act/processDefinition/startForm?processModelId='+${df.getProcessModelId()}]])">
+        <div class="col-sm-4" th:each="df : ${sysProcessList}" th:onclick="startProcess([[${df.getName()}]], [[${df.getProcessModelId()}]], [[${df.getFormId()}]])">
             <div class="ibox">
                 <div class="ibox-title">
                     <h5 th:text="${df.getName()}"></h5>
@@ -21,6 +21,8 @@
 <th:block th:include="include :: footer" />
 <script th:inline="javascript">
 
+    $.modal.open
+
     $(function(){
         var arr = $(".act_png");
         for(var i=0 ; i<arr.length ; i++){
@@ -31,8 +33,27 @@
         }
     })
 
-    function golist(key){
-        alert(key);
+    function startProcess(processName, processModelId, formId){
+        $.modal.confirm("确定发起该流程吗？", function() {
+            if(formId == null || formId == ''){
+                $.ajax({
+                    url: '/act/processDefinition/startSysProcessByNullForm?processModelId='+processModelId,
+                    type: 'get',
+                    success: function(res){
+                        if(res.code == 0){
+                            $.modal.msgSuccess("流程发起成功");
+                        } else {
+                            $.modal.msgError("流程发起失败");
+                        }
+                    },
+                    error: function (res) {
+                        $.modal.msgError("流程发起异常，"+res.msg);
+                    }
+                })
+            } else {
+                $.modal.open(processName, '/act/processDefinition/startForm?processModelId='+processModelId);
+            }
+        })
     }
 </script>
 </body>
