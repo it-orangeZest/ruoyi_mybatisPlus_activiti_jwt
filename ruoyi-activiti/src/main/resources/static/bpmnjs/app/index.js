@@ -23,7 +23,7 @@ var customTranslateModule = {
 debugger
 var container = $('#js-drop-zone');
 var canvas = $('#js-canvas');
-var bpmnModeler = new BpmnModeler({
+window.bpmnModeler = new BpmnModeler({
   container: canvas,
   propertiesPanel: {
     parent: '#js-properties-panel'

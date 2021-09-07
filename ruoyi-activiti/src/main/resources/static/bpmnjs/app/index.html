@@ -100,6 +100,23 @@
   <script>
     //父页面通过js复制
     var formData = {};
+    var processKey = '';
+    var name = '';
+
+    function setKeyAndName(){
+      const modeling = bpmnModeler.get('modeling')
+      var elementRegistry = bpmnModeler.get('elementRegistry');
+      var all = elementRegistry.getAll();
+      for(var i=0 ; i<all.length ; i++){
+        var shape = all[i];
+        if (shape.type == 'bpmn:Process'){
+          modeling.updateProperties(shape, {
+            id: processKey,
+            name: name
+          })
+        }
+      }
+    }
 
     function closeAndRefreshParent(){
       debugger;
