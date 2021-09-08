@@ -118,6 +118,26 @@
       }
     }
 
+    function setTaskFormKey(formKey){
+      debugger
+      const modeling = bpmnModeler.get('modeling');
+      if(currentTaskShape){
+        modeling.updateProperties(currentTaskShape, {
+          formKey: formKey
+        })
+        currentTaskShape = null;
+        addedTask = null;
+      } else if(addedTask) {
+        modeling.updateProperties(addedTask, {
+          formKey: formKey
+        })
+        currentTaskShape = null;
+        addedTask = null;
+      } else {
+        window.parent.$.modal.alert("异常了，请手动填写");
+      }
+    }
+
     function closeAndRefreshParent(){
       debugger;
       window.parent.parent.$.modal.msgSuccess("创建成功！");

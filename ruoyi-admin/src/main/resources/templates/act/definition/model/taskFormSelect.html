@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('流程节点表单选择')" />
+    <th:block th:include="include :: jasny-bootstrap-css" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: jasny-bootstrap-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('custForm:form:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('custForm:form:remove')}]];
+        var typeDatas = [[${@dict.getType('act_form_type')}]];
+        var statusDatas = [[${@dict.getType('sys_normal_disable')}]];
+        var prefix = ctx + "act/definition/model";
+
+        $(function() {
+            var options = {
+                url: "/custForm/form/list?type=act_form_type_002&status=0",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "流程模型",
+                singleSelect  : true,
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '',
+                    visible: false
+                },
+                {
+                    field: 'formKey',
+                    title: '表单key'
+                },
+                {
+                    field: 'formName',
+                    title: '表单名'
+                },
+                {
+                    field: 'type',
+                    title: '表单类型',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(typeDatas, value);
+                    }
+                },
+                {
+                    field: 'remark',
+                    title: '备注'
+                },
+                {
+                    field: 'status',
+                    title: '状态',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(statusDatas, value);
+                    }
+                }]
+            };
+            $.table.init(options);
+
+        });
+
+        function submitHandler() {
+            var rows = $("#bootstrap-table").bootstrapTable('getSelections');
+            var row = rows[0];
+            window.parent.document.getElementById("bpmnIframe").contentWindow.setTaskFormKey(row.formKey);
+            $.modal.close();
+        }
+    </script>
+</body>
+</html>

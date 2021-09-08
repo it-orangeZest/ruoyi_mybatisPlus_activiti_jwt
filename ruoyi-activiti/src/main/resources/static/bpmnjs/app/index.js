@@ -15,6 +15,10 @@ const key = href.split(window.location.host)[1];
 const publicurl = proHost + key;
 
 var modelId = "";
+//当前选中的task
+window.currentTaskShape;
+//最近创建的task
+window.addedTask;
 
 // 添加翻译组件
 var customTranslateModule = {
@@ -48,11 +52,14 @@ if (!window.FileList || !window.FileReader) {
 
 
 $(function () {
+  clickTask();
+  clickFormKey();
+  shapeAdded();
   // 创建bpmn
   debugger
   var param = tools.getUrlParam(window.location.href)
   $('.item').show()
-  modelId = param.modelId;
+  //modelId = param.modelId;
   if (!param || param.type === 'addBpmn') {
     tools.createDiagram(diagramXML, bpmnModeler, container);
   } else if(param.type === 'edit'){
@@ -177,4 +184,50 @@ $(function () {
     tools.saveBpmnModel(formData, bpmnModeler)
   })
 
+  function clickFormKey() {
+
+    $("#js-properties-panel").on("click", "#activiti-form-key", function(){
+      var shape = window.currentTaskShape
+      const modeling = bpmnModeler.get('modeling');
+      // modeling.updateProperties(shape, {
+      //   formKey: "abc"
+      // })
+      window.parent.$.modal.open("流程节点表单选择", "/act/definition/model/taskFormSelect");
+    })
+  }
+
+  function clickTask() {
+    const eventBus = bpmnModeler.get('eventBus') // 需要使用eventBus
+    var elementRegistry = bpmnModeler.get('elementRegistry')
+    const eventTypes = ['element.click'] // 需要监听的事件集合
+    eventTypes.forEach(function(eventType) {
+      eventBus.on(eventType, function(e) {
+        var shape = e.element ? elementRegistry.get(e.element.id) : e.shape;
+        if(shape.type == 'bpmn:UserTask'){
+          window.currentTaskShape=shape;
+        } else {
+          window.currentTaskShape=null;
+        }
+        window.addedTask=null;
+      })
+    })
+  }
+
+  function shapeAdded() {
+    const eventBus = bpmnModeler.get('eventBus') // 需要使用eventBus
+    var elementRegistry = bpmnModeler.get('elementRegistry')
+    const eventTypes = ['shape.added'] // 需要监听的事件集合
+    eventTypes.forEach(function(eventType) {
+      eventBus.on(eventType, function(e) {
+        var shape = e.element ? elementRegistry.get(e.element.id) : e.shape;
+        if(shape.type == 'bpmn:UserTask'){
+          window.addedTask=shape;
+        } else {
+          window.addedTask=null;
+        }
+        window.currentTaskShape=null;
+      })
+    })
+
+  }
 });

@@ -45,10 +45,10 @@
                         <a class="nav-link" href="#step-1"> 第一步：选择流程发起表单 </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#step-2"> 第二步：设计流程 </a>
+                        <a class="nav-link" href="#step-2"> 第二步：填写流程模型信息 </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#step-3"> 第三步：填写流程模型信息 </a>
+                        <a class="nav-link" href="#step-3"> 第三步：设计流程 </a>
                     </li>
                 </ul>
                 <div class="tab-content">
@@ -84,12 +84,8 @@
 
                         </div>
                     </div>
+
                     <div id="step-2" class="tab-pane" role="tabpanel" aria-labelledby="step-2">
-                        <div>
-                            <iframe id="bpmnIframe" th:src="'/bpmnjs/dist/index.html?type=edit&modelId=' + ${tProcessModel.modelId}" style="width: 100%; height: 620px; border: 0;"></iframe>
-                        </div>
-                    </div>
-                    <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
                         <div>
                             <form class="form form-horizontal m-t" th:object="${tProcessModel}">
                                 <div class="ibox">
@@ -104,14 +100,14 @@
                                             <label class="col-sm-3 control-label" >流程key：</label>
 
                                             <div class="col-sm-8" >
-                                                <input type="text" name="processKey" placeholder="流程key" class="form-control" th:field="*{processKey}">
+                                                <input id="processKey" type="text" name="processKey" placeholder="流程key" class="form-control" th:field="*{processKey}">
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label class="col-sm-3 control-label" >流程名称：</label>
 
                                             <div class="col-sm-8" >
-                                                <input type="text" name="name" placeholder="流程名称" class="form-control" th:field="*{name}">
+                                                <input id="name" type="text" name="name" placeholder="流程名称" class="form-control" th:field="*{name}">
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -133,6 +129,12 @@
                             </form>
                         </div>
                     </div>
+
+                    <div id="step-3" class="tab-pane" role="tabpanel" aria-labelledby="step-3">
+                        <div>
+                            <iframe id="bpmnIframe" th:src="'/bpmnjs/dist/index.html?type=edit&modelId=' + ${tProcessModel.modelId}" style="width: 100%; height: 620px; border: 0;"></iframe>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -149,7 +151,66 @@
     var parentTabe = [[${windowName}]];
     var tProcessModel = [[${tProcessModel}]];
     $("#form-form-add").validate({
-        focusCleanup: true
+        focusCleanup: true,
+        onkeyup: false,
+        rules: {
+            processKey: {
+                required: true,
+                remote: {
+                    url: prefix + "/processKeyIsExist",     //后台处理程序
+                    type: "post",               //数据发送方式
+                    data: {                     //要传递的数据
+                        processKey: function() {
+                            return $("#processKey").val();
+                        }
+                    },
+                    dataFilter: function (res, type) {
+                        var arr = eval("("+res+")");
+                        if(arr.code == 0){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            },
+            name: {
+                required: true,
+                remote: {
+                    url: prefix + "/nameIsExist",     //后台处理程序
+                    type: "post",               //数据发送方式
+                    data: {                     //要传递的数据
+                        name: function () {
+                            return $("#name").val();
+                        }
+                    },
+                    dataFilter: function (res, type) {
+                        var arr = eval("(" + res + ")");
+                        if (arr.code == 0) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            },
+            treeName: {
+                required: true
+            }
+        },
+        messages: {
+            processKey: {
+                required: "请输入流程key",
+                remote: "流程key已存在，请修改"
+            },
+            name: {
+                required: "请输入流程名称",
+                remote: "流程名称已存在，请修改"
+            },
+            treeName: {
+                required: "请选择所属部门"
+            }
+        }
     });
 
     function submitHandler() {
@@ -235,7 +296,21 @@
         if(stepDirection == 'forward'){
             var form = $("#step-" + (currentStepNumber + 1)).find('.form');
             if(form.length > 0){
-                return form.validate().form();
+                var flag = form.validate().form();
+                if(flag){
+                    //如果是第二步,那么将流程key和流程名传递给bpmn
+                    debugger;
+                    if(currentStepNumber==1){
+                        var processKey = $("#processKey").val();
+                        var name = $("#name").val();
+                        $("#bpmnIframe")[0].contentWindow.processKey = processKey;
+                        $("#bpmnIframe")[0].contentWindow.name = name;
+                        $("#bpmnIframe")[0].contentWindow.setKeyAndName();
+                    }
+                    return true;
+                }else{
+                    return false;
+                }
             }
             return true;
         }

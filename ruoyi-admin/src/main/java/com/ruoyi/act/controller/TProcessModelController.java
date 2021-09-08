@@ -376,4 +376,9 @@ public class TProcessModelController extends BaseController
             return AjaxResult.success();
         }
     }
+
+    @GetMapping("/taskFormSelect")
+    public String taskFormSelect(){
+        return prefix + "/taskFormSelect";
+    }
 }
