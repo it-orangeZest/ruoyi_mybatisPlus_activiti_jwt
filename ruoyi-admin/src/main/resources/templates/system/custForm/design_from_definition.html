@@ -418,12 +418,15 @@
     function getHtml(obj, selectedId){
         var str = "";
         for (prop in obj) {
-
+            var readonly = "";
+            if(obj[prop].readonly){
+                readonly = "readonly"
+            }
             str += `
 					<div class="" style="display: flex;align-items: baseline;padding-left: 10px;margin-bottom: 10px;">
 						<label class="control-label" style="width: 55px;text-align: right;">`+obj[prop].name+`</label>
 						<div style="flex: 1;margin-left: 10px;">
-							<input type="text" placeholder="" value="`+obj[prop].value+`" class="form-control custom-attribute" data-attribute="`+prop+`">
+							<input type="text" placeholder="" value="`+obj[prop].value+`" class="form-control custom-attribute" data-attribute="`+prop+`" `+readonly+`>
 						</div>
 					</div>
 				`;

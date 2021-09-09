@@ -55,6 +55,7 @@ $(function () {
   clickTask();
   clickFormKey();
   shapeAdded();
+  rootChangeReSetForm();
   // 创建bpmn
   debugger
   var param = tools.getUrlParam(window.location.href)
@@ -209,6 +210,24 @@ $(function () {
           window.currentTaskShape=null;
         }
         window.addedTask=null;
+      })
+    })
+  }
+
+  function rootChangeReSetForm() {
+    const eventBus = bpmnModeler.get('eventBus') // 需要使用eventBus
+    var elementRegistry = bpmnModeler.get('elementRegistry')
+    const eventTypes = ['element.changed'] // 需要监听的事件集合
+    eventTypes.forEach(function(eventType) {
+      eventBus.on(eventType, function(e) {
+        if (e && e.element.type == 'bpmn:Process'){
+          var shape = e.element ? elementRegistry.get(e.element.id) : e.shape;
+          var o = shape.businessObject;
+          var processKey = o.id;
+          var name = o.name;
+          window.parent.document.getElementById("processKey").value = processKey;
+          window.parent.document.getElementById("name").value = name;
+        }
       })
     })
   }
