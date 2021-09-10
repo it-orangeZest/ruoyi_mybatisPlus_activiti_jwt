@@ -53,7 +53,7 @@ if (!window.FileList || !window.FileReader) {
 
 $(function () {
   clickTask();
-  clickFormKey();
+  clickTaskForm();
   shapeAdded();
   rootChangeReSetForm();
   // 创建bpmn
@@ -185,15 +185,33 @@ $(function () {
     tools.saveBpmnModel(formData, bpmnModeler)
   })
 
-  function clickFormKey() {
+  function clickTaskForm() {
 
+    //formKey点击事件
     $("#js-properties-panel").on("click", "#activiti-form-key", function(){
       var shape = window.currentTaskShape
-      const modeling = bpmnModeler.get('modeling');
       // modeling.updateProperties(shape, {
       //   formKey: "abc"
       // })
       window.parent.$.modal.open("流程节点表单选择", "/act/definition/model/taskFormSelect");
+    })
+
+    //代理人点击事件
+    $("#js-properties-panel").on("click", "#activiti-assignee", function(){
+      var shape = window.currentTaskShape
+      window.parent.$.modal.open("流程节点代理人选择", "/act/definition/model/taskAssigneeSelect");
+    })
+
+    //候选用户点击事件
+    $("#js-properties-panel").on("click", "#activiti-candidateUsers", function(){
+      var shape = window.currentTaskShape
+      window.parent.$.modal.open("流程节点候选用户选择", "/act/definition/model/taskCandidateUsersSelect");
+    })
+
+    //候选组点击事件
+    $("#js-properties-panel").on("click", "#activiti-candidateGroups", function(){
+      var shape = window.currentTaskShape
+      window.parent.$.modal.open("流程节点候选组选择", "/act/definition/model/taskCandidateGroupsSelect");
     })
   }
 

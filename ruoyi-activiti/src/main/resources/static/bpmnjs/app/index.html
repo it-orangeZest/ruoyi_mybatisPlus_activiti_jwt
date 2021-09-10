@@ -118,6 +118,7 @@
       }
     }
 
+    //设置formKey
     function setTaskFormKey(formKey){
       debugger
       const modeling = bpmnModeler.get('modeling');
@@ -125,17 +126,64 @@
         modeling.updateProperties(currentTaskShape, {
           formKey: formKey
         })
-        currentTaskShape = null;
-        addedTask = null;
       } else if(addedTask) {
         modeling.updateProperties(addedTask, {
           formKey: formKey
         })
-        currentTaskShape = null;
-        addedTask = null;
       } else {
         window.parent.$.modal.alert("异常了，请手动填写");
       }
+    }
+
+    //设置代理人
+    function setTaskAssignee(assignee){
+        debugger
+        const modeling = bpmnModeler.get('modeling');
+        if(currentTaskShape){
+            modeling.updateProperties(currentTaskShape, {
+                assignee: assignee
+            })
+        } else if(addedTask) {
+            modeling.updateProperties(addedTask, {
+                assignee: assignee
+            })
+        } else {
+            window.parent.$.modal.alert("异常了，请手动填写");
+        }
+    }
+
+    //设置候选用户
+    function setTaskCandidateUsers(candidateUsers){
+        debugger
+        const modeling = bpmnModeler.get('modeling');
+        if(currentTaskShape){
+            modeling.updateProperties(currentTaskShape, {
+                candidateUsers: candidateUsers
+            })
+        } else if(addedTask) {
+            modeling.updateProperties(addedTask, {
+                candidateUsers: candidateUsers
+            })
+        } else {
+            window.parent.$.modal.alert("异常了，请手动填写");
+        }
+    }
+
+    //设置候选组
+    function setTaskcCandidateGroups(candidateGroups){
+        debugger
+        const modeling = bpmnModeler.get('modeling');
+        if(currentTaskShape){
+            modeling.updateProperties(currentTaskShape, {
+                candidateGroups: candidateGroups
+            })
+        } else if(addedTask) {
+            modeling.updateProperties(addedTask, {
+                candidateGroups: candidateGroups
+            })
+        } else {
+            window.parent.$.modal.alert("异常了，请手动填写");
+        }
     }
 
     function closeAndRefreshParent(){

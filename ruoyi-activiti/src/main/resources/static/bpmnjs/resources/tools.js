@@ -97,6 +97,22 @@ saveBpmn() {
 saveBpmnModel(formData, bpmnModeler) {
     debugger;
     window.parent.$.modal.loading("正在保存");
+
+    const modeling = bpmnModeler.get('modeling');
+    var elementRegistry = bpmnModeler.get('elementRegistry');
+    var all = elementRegistry.getAll();
+    for(var i=0 ; i<all.length ; i++){
+        var shape = all[i];
+        if (shape.type == 'bpmn:UserTask'){
+            var o = shape.businessObject;
+            if(!o.formKey){
+                modeling.updateProperties(shape, {
+                    formKey: "approveTask_common"
+                })
+            }
+        }
+    }
+
     bpmnModeler.saveXML({ format: true }, function (err, xml) {
         if (err) {
             return console.error('保存失败，请重试', err);

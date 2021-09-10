@@ -381,4 +381,19 @@ public class TProcessModelController extends BaseController
     public String taskFormSelect(){
         return prefix + "/taskFormSelect";
     }
+
+    @GetMapping("/taskAssigneeSelect")
+    public String taskAssigneeSelect(){
+        return prefix + "/taskAssigneeSelect";
+    }
+
+    @GetMapping("/taskCandidateUsersSelect")
+    public String taskCandidateUsersSelect(){
+        return prefix + "/taskCandidateUsersSelect";
+    }
+
+    @GetMapping("/taskCandidateGroupsSelect")
+    public String taskCandidateGroupsSelect(){
+        return prefix + "/taskCandidateGroupsSelect";
+    }
 }

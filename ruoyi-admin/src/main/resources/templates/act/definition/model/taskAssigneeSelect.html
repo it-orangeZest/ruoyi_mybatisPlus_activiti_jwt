@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('流程节点代理人选择')" />
+    <th:block th:include="include :: jasny-bootstrap-css" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <!--<div class="col-sm-12 search-collapse">
+                <form id="formId">
+                </form>
+            </div>-->
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: jasny-bootstrap-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:user:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:user:remove')}]];
+        var resetPwdFlag = [[${@permission.hasPermi('system:user:resetPwd')}]];
+        var prefix = ctx + "act/definition/model";
+
+        $(function() {
+            var options = {
+                url: "/system/user/list?status=0&delFlag=0",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "流程模型",
+                singleSelect  : true,
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'userId',
+                    title: '用户ID'
+                },
+                {
+                    field: 'loginName',
+                    title: '登录名称',
+                    sortable: true
+                },
+                {
+                    field: 'userName',
+                    title: '用户名称'
+                },
+                {
+                    field: 'dept.deptName',
+                    title: '部门'
+                },
+                {
+                    field: 'email',
+                    title: '邮箱',
+                    visible: false
+                },
+                {
+                    field: 'phonenumber',
+                    title: '手机'
+                }]
+            };
+            $.table.init(options);
+
+        });
+
+        function submitHandler() {
+            var rows = $("#bootstrap-table").bootstrapTable('getSelections');
+            var row = rows[0];
+            window.parent.document.getElementById("bpmnIframe").contentWindow.setTaskAssignee(row.loginName);
+            $.modal.close();
+        }
+    </script>
+</body>
+</html>

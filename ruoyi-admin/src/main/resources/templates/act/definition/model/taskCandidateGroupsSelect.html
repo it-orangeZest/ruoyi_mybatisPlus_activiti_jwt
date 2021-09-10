@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('流程节点候选组选择')" />
+    <th:block th:include="include :: jasny-bootstrap-css" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <!--<div class="col-sm-12 search-collapse">
+                <form id="formId">
+                </form>
+            </div>-->
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: jasny-bootstrap-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:role:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:role:remove')}]];
+        var prefix = ctx + "system/role";
+
+        $(function() {
+            var options = {
+                url: "/system/role/list?status=0&delFlag=0",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "流程模型",
+                singleSelect  : true,
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'roleId',
+                    title: '角色编号'
+                },
+                {
+                    field: 'roleName',
+                    title: '角色名称',
+                    sortable: true
+                },
+                {
+                    field: 'roleKey',
+                    title: '权限字符',
+                    sortable: true
+                }]
+            };
+            $.table.init(options);
+
+        });
+
+        function submitHandler() {
+            var rows = $("#bootstrap-table").bootstrapTable('getSelections');
+            var row = rows[0];
+            window.parent.document.getElementById("bpmnIframe").contentWindow.setTaskcCandidateGroups(row.roleKey);
+            $.modal.close();
+        }
+    </script>
+</body>
+</html>

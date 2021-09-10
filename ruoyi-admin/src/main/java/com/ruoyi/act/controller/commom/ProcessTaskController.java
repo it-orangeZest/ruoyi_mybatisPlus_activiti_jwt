@@ -436,6 +436,7 @@ public class ProcessTaskController extends BaseController {
     @RequestMapping("/taskForm")
     public String taskForm(@RequestParam("taskId") String taskId,
                            Model model) {
+        String loginName = ShiroUtils.getLoginName();
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
     	/*TaskFormData taskFormData = formService.getTaskFormData(task.getId());
         List<FormProperty> formProperties = taskFormData.getFormProperties();
@@ -448,9 +449,13 @@ public class ProcessTaskController extends BaseController {
         	}
         }*/
 
-        if(task == null){
+    	//节点不存在或节点的代理人不是当前用户
+        if(task == null || (task.getAssignee() != null && !StringUtils.equals(task.getAssignee(), loginName))){
             return prefix + "/taskIsUnExsit.html";
         }
+
+        //拾取任务
+        this.taskService.claim(taskId, loginName);
 
         String formKey = task.getFormKey();
 
@@ -532,5 +537,20 @@ public class ProcessTaskController extends BaseController {
         taskService.setVariablesLocal(task.getId(), map);
         taskService.complete(taskId, map);
         return toAjax(1);
+    }
+
+    @ResponseBody
+    @PostMapping("/returnTask")
+    public AjaxResult returnTask(String taskId){
+        String loginName = ShiroUtils.getLoginName();
+        Task task = this.taskService.createTaskQuery().taskId(taskId)
+                .taskAssignee(loginName)
+                .singleResult();
+        if(task == null){
+            return AjaxResult.error("你没有拾取该任务，无法交还");
+        }
+
+        this.taskService.setAssignee(taskId, null);//归还任务
+        return AjaxResult.success();
     }
 }
