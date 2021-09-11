@@ -1,0 +1,15 @@
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='济南分公司请假流程' 	where process_key='leave_process';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='任务节点监听' 		where process_key='task_listener';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='执行监听' 			where process_key='execution_listener';
+UPDATE `t_process_model` SET dept_id='101',               remark='定时发工资' 			where process_key='payoff';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='超时转派' 			where process_key='overtime_reassignment';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='超时非中断' 			where process_key='overtime_nothing';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='抛出信号流程' 		where process_key='throw_msg';
+UPDATE `t_process_model` SET dept_id='101',               remark='捕获信号流程' 		where process_key='catch_msg';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='任务取回流程' 		where process_key='task_back';
+UPDATE `t_process_model` SET dept_id='101',               remark='错误事件流程' 		where process_key='error_event';
+UPDATE `t_process_model` SET dept_id='101',               remark='服务任务流程' 		where process_key='server_process';
+UPDATE `t_process_model` SET dept_id='101',               remark='手工任务' 			where process_key='manual_task';
+UPDATE `t_process_model` SET dept_id='101',               remark='调用子流程' 			where process_key='sub_process';
+UPDATE `t_process_model` SET dept_id='101',               remark='人事子流程'		 	where process_key='personnel_sub';
+UPDATE `t_process_model` SET dept_id='101', form_id='18', remark='会签任务' 			where process_key='multInstances_process';
