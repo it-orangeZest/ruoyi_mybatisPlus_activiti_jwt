@@ -30,11 +30,26 @@
 
 完成
 
-整个项目的思路、关键整合步骤以及功能显示我放到了《简书》上，地址https://www.jianshu.com/c/e272795a7e21
+### 集成与改造过程分享
+整个项目的思路、关键整合步骤以及功能显示我放到了《简书》上，地址https://www.jianshu.com/c/e272795a7e21 <br/>
+感兴趣的小伙伴可以看看，其中包括：
+
+    1、mybatis升级为mybatis-plus
+
+    2、代码生成模板改造，适配mybatis-plus
+
+    3、自动管理数据库表的公共字段
+
+    4、集成activiti6
+
+    5、集成bpmnjs及功能易用性改造
+
+    6、手写表单编辑器
+
 
 ### 在线体验
 权限没有做过多的限制，请尽量不要破坏现有数据<br/>
-流程相关账号，密码都是111111<br/>
+流程相关账号，密码都是111111
 &emsp;&emsp;普通员工，账号：ttz&emsp;&emsp;角色：common<br/>
 &emsp;&emsp;部门领导，账号：lj&emsp;&emsp;角色：sectionLead<br/>
 &emsp;&emsp;人事，账号：gw&emsp;&emsp;角色：personnel<br/>
