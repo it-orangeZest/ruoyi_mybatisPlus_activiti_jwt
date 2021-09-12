@@ -132,7 +132,7 @@
                 </configuration>
             </plugin> -->
         </plugins>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>ry_mp_activiti</finalName>
     </build>
 
 </project>
