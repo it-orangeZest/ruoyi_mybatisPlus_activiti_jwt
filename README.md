@@ -40,7 +40,7 @@
 &emsp;&emsp;人事，账号：gw&emsp;&emsp;角色：personnel<br/>
 &emsp;&emsp;董事长，账号：hmxs&emsp;&emsp;角色：boss<br/>
 地址：http://60.205.152.250/<br/>
-服务器配置比较垃圾，相应会比较慢<br/>
+服务器配置比较垃圾，响应会比较慢<br/>
 
 ### 演示图
 <table>
