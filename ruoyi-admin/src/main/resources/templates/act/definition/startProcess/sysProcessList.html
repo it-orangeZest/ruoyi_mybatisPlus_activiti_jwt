@@ -2,14 +2,33 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
     <th:block th:include="include :: header('全部流程')" />
+    <style>
+        .layui-badge{
+            height: 18px;
+            line-height: 18px;
+            position: relative;
+            display: inline-block;
+            padding: 0 6px;
+            font-size: 14px;
+            text-align: center;
+            background-color: #FF5722;
+            color: #fff;
+            border-radius: 2px;
+        }
+        .layui-bg-green {
+            background-color: #009688!important;
+        }
+    </style>
 </head>
 <body class="gray-bg">
 <div class="container-div" style="padding: 20px 28px;">
     <div class="row">
         <div class="col-sm-4" th:each="df : ${sysProcessList}" th:onclick="startProcess([[${df.getName()}]], [[${df.getProcessModelId()}]], [[${df.getFormId()}]])">
             <div class="ibox">
-                <div class="ibox-title">
+                <div class="ibox-title" style="display: flex;justify-content: space-between;align-items: baseline;">
                     <h5 th:text="${df.getName()}"></h5>
+                    <span th:if="${df.getType() == '1'}" class="layui-badge">系统案例</span>
+                    <span th:if="${df.getType() == '0'}" class="layui-badge layui-bg-green">用户创建</span>
                 </div>
                 <div class="ibox-content" style="height: 200px;display: flex;align-items: center;justify-content: center;">
                     <img class="act_png" src="" th:data-pdid="${df.getDefinitionId()}" th:data-png="${df.getDiagramResourceName()}" style="width: auto;height: auto;max-width: 100%;max-height: 100%;">

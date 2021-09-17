@@ -110,7 +110,7 @@ public class ProcessDefinitionController extends BaseController {
 
         QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("status", "act_model_status_002", "act_model_status_003", "act_model_status_004")
-                .orderByAsc("create_time");
+                .orderByDesc("create_time");
         List<TProcessModel> list = this.itProcessModelService.list(queryWrapper);
 
         for(TProcessModel e : list){
@@ -126,6 +126,7 @@ public class ProcessDefinitionController extends BaseController {
                 vo.setFormId(e.getFormId());
                 vo.setResourceName(definition.getResourceName());
                 vo.setDiagramResourceName(definition.getDiagramResourceName());
+                vo.setType(e.getType());
                 voList.add(vo);
             }
         }

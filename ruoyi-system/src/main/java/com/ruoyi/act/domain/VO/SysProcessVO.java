@@ -21,6 +21,9 @@ public class SysProcessVO {
 
     private String DiagramResourceName;
 
+    //流程是否是案例
+    private String type;
+
     public String getProcesskey() {
         return processkey;
     }
@@ -83,5 +86,13 @@ public class SysProcessVO {
 
     public void setDefinitionId(String definitionId) {
         this.definitionId = definitionId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
