@@ -21,6 +21,7 @@ import org.activiti.engine.IdentityService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
@@ -163,6 +164,26 @@ public class ProcessDefinitionController extends BaseController {
     @PostMapping("/remove")
     @ResponseBody
     public AjaxResult remove(String ids) {
+
+        String loginName = ShiroUtils.getLoginName();
+        if(!StringUtils.equals("admin", loginName)){
+            String[] arr = ids.split(",");
+            for (String id : arr){
+                Deployment deployment = this.repositoryService.createDeploymentQuery().deploymentId(id).singleResult();
+                String modelId = deployment.getKey();
+                QueryWrapper<TProcessModel> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("model_id", modelId);
+                TProcessModel one = this.itProcessModelService.getOne(queryWrapper);
+                if(one != null){
+                    String type = one.getType();
+                    if(StringUtils.equals("1", type)){
+                        return AjaxResult.error("案例流程模型不允许删除");
+                    }
+                }
+            }
+        }
+
+
         try {
             return toAjax(processDefinitionService.deleteProcessDeploymentByIds(ids));
         }

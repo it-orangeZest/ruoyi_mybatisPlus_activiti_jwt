@@ -47,6 +47,8 @@ public class TProcessModel extends MPBaseEntity
 
     private String modelId;
 
+    private String type;
+
     @TableField(exist = false)
     private String values;
 
@@ -137,6 +139,14 @@ public class TProcessModel extends MPBaseEntity
         this.deptName = deptName;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return "TProcessModel{" +
@@ -149,6 +159,7 @@ public class TProcessModel extends MPBaseEntity
                 ", formName='" + formName + '\'' +
                 ", status='" + status + '\'' +
                 ", modelId='" + modelId + '\'' +
+                ", type='" + type + '\'' +
                 ", values='" + values + '\'' +
                 '}';
     }

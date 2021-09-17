@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('流程模型列表')" />
+    <th:block th:include="include :: jasny-bootstrap-css" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>key：</label>
+                                <input type="text" name="processKey"/>
+                            </li>
+                            <li>
+                                <label>部门id：</label>
+                                <input type="text" name="deptId"/>
+                            </li>
+                            <li>
+                                <label>模型名称：</label>
+                                <input type="text" name="name"/>
+                            </li>
+                            <li>
+                                <label>表单id：</label>
+                                <input type="text" name="formId"/>
+                            </li>
+                            <li>
+                                <label>状态：</label>
+                                <select name="status" th:with="type=${@dict.getType('act_model_status')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <!--<a class="btn btn-success" onclick="openDesignTab()" shiro:hasPermission="act/definition:model:add">
+                    <i class="fa fa-plus"></i> 添加
+                </a>-->
+                <a class="btn multiple btn-warning" onclick="multipleDownLoad()" shiro:hasPermission="act/definition:model:add">
+                    <i class="fa fa-plus"></i> 批量导出
+                </a>
+                <span style="color: red;">流程案例不支持编辑、部署操作，只能查看。如果想创建自己的流程，请前往流程模型菜单。</span>
+                <!--<div id="processDefinitionDiv" class="fileinput fileinput-new" data-provides="fileinput" style="margin-bottom: 0; margin-right: -3px;">
+										<span class="btn btn-success btn-file" style="font-size: 12px;">
+											<span><i class="fa fa-upload"></i> 部署流程定义</span>
+											<input type="file" name="processDefinition" multiple>
+										</span>
+                    <span style="color: red;">支持上传单bpmn文件或多bpmn文件打成的zip包</span>
+                    <span class="fileinput-filename"></span>
+                    <a href="#" class="close fileinput-exists" data-dismiss="fileinput" style="float: none">&times;</a>
+                </div>-->
+                <!--<a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="act/definition:model:edit">
+                    <i class="fa fa-edit"></i> 修改
+                </a>
+                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="act/definition:model:remove">
+                    <i class="fa fa-remove"></i> 删除
+                </a>
+                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="act/definition:model:export">
+                    <i class="fa fa-download"></i> 导出
+                </a>-->
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: jasny-bootstrap-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('act/definition:model:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('act/definition:model:remove')}]];
+        var statusDatas = [[${@dict.getType('act_model_status')}]];
+        var prefix = ctx + "act/definition/model";
+
+        $(function() {
+            var options = {
+                url: prefix + "/exampleList",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "流程模型",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '',
+                    visible: false
+                },
+                {
+                    field: 'processKey',
+                    title: 'key'
+                },
+                {
+                    field: 'deptName',
+                    title: '所属部门'
+                },
+                {
+                    field: 'name',
+                    title: '模型名称'
+                },
+                {
+                    field: 'formName',
+                    title: '表单名称'
+                },
+                {
+                    field: 'status',
+                    title: '状态',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(statusDatas, value);
+                    }
+                },
+                {
+                    field: 'remark',
+                    title: '备注'
+                },
+                {
+                    field: 'createBy',
+                    title: '创建人'
+                },
+                {
+                    field: 'createTime',
+                    title: '创建时间'
+                },
+                {
+                    field: 'updateBy',
+                    title: '更新人'
+                },
+                {
+                    field: 'updateTime',
+                    title: '更新时间'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="openEditTab(\'' + row.id + '\')"><i class="fa fa-edit"></i>查看</a> ');
+                        actions.push('<a class="btn btn-warning btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="downLoad(\'' + row.id + '\')"><i class="fa fa-edit"></i>导出</a> ');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+
+            //initProcessDefinitionFileInput();
+        });
+
+        function openDesignTab(){
+            let windowName = window.name;
+            $.modal.openTab("流程模型设计", prefix + "/add?windowName="+windowName);
+        }
+
+        function openEditTab(id){
+            let windowName = window.name;
+            $.modal.openTab("流程模型设计", prefix + "/edit?id="+id+"&windowName="+windowName);
+        }
+
+        function deployModel(id){
+            $.modal.loading("部署中...");
+            $.ajax({
+                url: prefix + "/deployModel?id=" + id,
+                type: "get",
+                success: function (res) {
+                    if(res.code == 0){
+                        $.table.refresh();
+                        $.modal.closeLoading();
+                        $.modal.msgSuccess("部署成功");
+                    }else{
+                        $.modal.closeLoading();
+                        $.modal.msgSuccess("部署失败");
+                    }
+                },
+                error: function (res) {
+                    $.modal.closeLoading();
+                    $.modal.msgSuccess("部署异常");
+                }
+            })
+        }
+
+        /*function initProcessDefinitionFileInput() {
+            $('#processDefinitionDiv').on('change.bs.fileinput', function (e) {
+                // 处理自己的业务
+                var formdata = new FormData();
+                formdata.append("processDefinition", $('input[type=file]')[0].files[0]);
+                $.ajax({
+                    url: '/act/processDefinition/upload',
+                    data: formdata,
+                    type: "post",
+                    processData: false,
+                    contentType: false,
+                    success: function(result) {
+                        $('#processDefinitionDiv').fileinput('reset');     // 重置
+                        $.operate.ajaxSuccess(result);
+                    }
+                })
+            });
+        }*/
+
+        function downLoad(id){
+            $.ajax({
+                url: '/act/definition/model/downLoad?id=' + id,
+                type: "get",
+                success: function (res) {
+                    if(res.code == 0){
+                        window.location.href = ctx + "common/download?fileName=" + encodeURI(res.msg) + "&delete=" + true;
+                    }
+                }
+            })
+        }
+
+        function multipleDownLoad(){
+            table.set();
+            var rows = $.common.isEmpty(table.options.uniqueId) ? $.table.selectFirstColumns() : $.table.selectColumns(table.options.uniqueId);
+            if (rows.length == 0) {
+                $.modal.alertWarning("请至少选择一条记录");
+                return;
+            }
+            $.ajax({
+                url: '/act/definition/model/multipleDownLoad',
+                type: "post",
+                data: {"ids": rows.join()},
+                success: function (res) {
+                    if(res.code == 0){
+                        window.location.href = ctx + "common/download?fileName=" + encodeURI(res.msg) + "&delete=" + true;
+                    }
+                }
+            })
+        }
+    </script>
+</body>
+</html>

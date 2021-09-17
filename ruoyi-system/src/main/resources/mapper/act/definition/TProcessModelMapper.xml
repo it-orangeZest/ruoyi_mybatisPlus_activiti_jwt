@@ -16,19 +16,22 @@
                     <result property="updateTime"    column="update_time"    />
                     <result property="status"    column="status"    />
                     <result property="remark"    column="remark"    />
+                    <result property="modelId"    column="model_id"    />
+                    <result property="type"    column="type"    />
                     </resultMap>
     
     <sql id="selectTProcessModelVo">
-        select id, process_key, dept_id, name, form_id, create_by, create_time, update_by, update_time, status, remark from t_process_model
+        select id, process_key, dept_id, name, form_id, create_by, create_time, update_by, update_time, status, remark, model_id, type from t_process_model
     </sql>
 
     <select id="selectTProcessModelList" parameterType="TProcessModel" resultMap="TProcessModelResult">
         <include refid="selectTProcessModelVo"/>
         <where>
-                                                                                                    <if test="processKey != null  and processKey != ''"> and process_key = #{processKey}</if>
-                                                                                                            <if test="deptId != null "> and dept_id = #{deptId}</if>
-                                                                                                            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
-                                                                                                            <if test="formId != null "> and form_id = #{formId}</if>
+            <if test="processKey != null  and processKey != ''"> and process_key = #{processKey}</if>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="formId != null "> and form_id = #{formId}</if>
+            <if test="type != null "> and type = #{type}</if>
                                                                                                                                                                                                                             <if test="status != null  and status != ''"> and status = #{status}</if>
                                                                                     </where>
             </select>

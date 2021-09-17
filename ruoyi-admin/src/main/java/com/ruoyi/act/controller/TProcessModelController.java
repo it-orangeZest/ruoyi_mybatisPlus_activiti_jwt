@@ -12,6 +12,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.utils.uuid.UUID;
@@ -68,6 +69,13 @@ public class TProcessModelController extends BaseController
         return prefix + "/model";
     }
 
+    @RequiresPermissions("act/definition:model:view")
+    @GetMapping("/exampleModel")
+    public String exampleModel()
+    {
+        return prefix + "/exampleModel";
+    }
+
     /**
      * 查询流程模型列表
      */
@@ -76,6 +84,41 @@ public class TProcessModelController extends BaseController
     @ResponseBody
     public TableDataInfo list(TProcessModel tProcessModel)
     {
+        String loginName = ShiroUtils.getLoginName();
+        if(!StringUtils.equals("admin", loginName)){
+            //查询非案例流程模型
+            tProcessModel.setType("0");
+        }
+
+        startPage();
+        List<TProcessModel> list = itProcessModelService.selectTProcessModelList(tProcessModel);
+        for(TProcessModel e : list){
+            if(e.getFormId() != null){
+                TCustForm custForm = this.itCustFormService.getById(e.getFormId());
+                if(custForm != null){
+                    e.setFormName(custForm.getFormName());
+                }
+            }
+            if(e.getDeptId() != null){
+                SysDept sysDept = this.iSysDeptService.selectDeptById(e.getDeptId());
+                if(sysDept != null){
+                    e.setDeptName(sysDept.getDeptName());
+                }
+            }
+        }
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询流程模型列表
+     */
+    @RequiresPermissions("act/definition:model:list")
+    @PostMapping("/exampleList")
+    @ResponseBody
+    public TableDataInfo exampleList(TProcessModel tProcessModel)
+    {
+        //查询非案例流程模型
+        tProcessModel.setType("1");
         startPage();
         List<TProcessModel> list = itProcessModelService.selectTProcessModelList(tProcessModel);
         for(TProcessModel e : list){

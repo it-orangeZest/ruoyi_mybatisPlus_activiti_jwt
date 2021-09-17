@@ -258,6 +258,13 @@
     });
 
     function submit(){
+        debugger;
+        //如果是案例流程，不能保存
+        if(tProcessModel.type === "1"){
+            $.modal.alertWarning("案例流程模型不允许修改，请创建自己的流程进行修改");
+            return false;
+        }
+
         var data = {};
         $('.form').each(function (index, form){
             // 这里可以使用$.common.formToJSON(formId);  需要在form上加id
