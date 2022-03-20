@@ -27,11 +27,9 @@
 
     2、创建数据库，执行项目根目录init文件夹下的ry_mp_activiti.sql文件
 
-    3、进入ruoyi-activiti模块下的resources\static\bpmnjs目录，依次执行npm install和npm run dev命令，耐心等待。注意：npm版本过高会报错，需降低版本，我的是6.13.4没问题。
+    3、修改application.yml中的database-schema-update为true，启动项目，自动创建activiti相关表，成功后database-schema-update改回false
 
-    4、修改application.yml中的database-schema-update为true，启动项目，自动创建activiti相关表，成功后database-schema-update改回false
-
-    5、创建activiti用户、角色相关视图：执行项目根目录init文件夹下的view.sql文件
+    4、创建activiti用户、角色相关视图：执行项目根目录init文件夹下的view.sql文件
 
 ### 导入流程案例（可选）：
 
