@@ -42,7 +42,9 @@
 完成
 
 ### 集成与改造过程分享
-整个项目的思路、关键整合步骤以及功能显示我放到了《简书》上，地址https://www.jianshu.com/c/e272795a7e21 <br/>
+整个项目的思路、关键整合步骤以及功能显示我放到了：
+ 《掘金》上，地址https://juejin.cn/column/7077556797913071630 <br/>
+ 《简书》上，地址https://www.jianshu.com/c/e272795a7e21 <br/>
 感兴趣的小伙伴可以看看，其中包括：
 
     1、mybatis升级为mybatis-plus
