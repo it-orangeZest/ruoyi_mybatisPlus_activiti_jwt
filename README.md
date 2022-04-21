@@ -4,7 +4,8 @@
 上有老下有小的程序员社畜，时间真的很紧张，请见谅** 
 
 视频录制好了，质量不高，凑合着看。
-链接：https://pan.baidu.com/s/1uOhNbGBD_5yhDWR8l6Uc0Q 
+感谢barry200890将视频放到了 **B站** ，地址： https://www.bilibili.com/video/BV1a3411M7Mh/    
+网盘链接：https://pan.baidu.com/s/1uOhNbGBD_5yhDWR8l6Uc0Q 
 提取码：la61
 
 ------------------------------------- 割 --------------------------------------------------
