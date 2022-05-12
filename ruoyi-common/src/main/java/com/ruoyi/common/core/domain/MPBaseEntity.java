@@ -3,6 +3,7 @@ package com.ruoyi.common.core.domain;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -23,24 +24,29 @@ public class MPBaseEntity implements Serializable
     private String searchValue;
 
     /** 创建者 */
+    @ApiModelProperty("创建者")
     @TableField(fill = FieldFill.INSERT)
     private String createBy;
 
     /** 创建时间 */
+    @ApiModelProperty(value = "创建时间",example = "2022-05-10 16:20:33")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /** 更新者 */
+    @ApiModelProperty(value = "更新者")
     @TableField(fill = FieldFill.UPDATE)
     private String updateBy;
 
     /** 更新时间 */
+    @ApiModelProperty(value = "更新时间",example = "2022-05-10 16:20:33")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /** 备注 */
+    @ApiModelProperty(value = "备注")
     private String remark;
 
     /** 请求参数 */

@@ -16,7 +16,7 @@ ruoyi:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为80
-  port: 80
+  port: 8090
   servlet:
     # 应用的访问路径
     context-path: /
@@ -160,4 +160,6 @@ xss:
 # Swagger配置
 swagger:
   # 是否开启swagger
-  enabled: true
+  enabled: true,
+  application-description: 接口文档
+  try-host: http://localhost:${server.port}

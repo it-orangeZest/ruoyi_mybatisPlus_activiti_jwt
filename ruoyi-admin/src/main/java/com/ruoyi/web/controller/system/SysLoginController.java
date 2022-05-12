@@ -1,7 +1,13 @@
 package com.ruoyi.web.controller.system;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.ruoyi.common.core.controller.BaseController;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.shiro.service.SysPasswordService;
+import com.ruoyi.framework.web.service.ConfigService;
+import com.ruoyi.system.service.ISysUserService;
+import io.swagger.annotations.Api;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -13,11 +19,9 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.utils.ServletUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.framework.web.service.ConfigService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 登录验证
@@ -25,6 +29,7 @@ import com.ruoyi.framework.web.service.ConfigService;
  * @author ruoyi
  */
 @Controller
+@Api(value = "系统登录",tags = "系统登录")
 public class SysLoginController extends BaseController
 {
     /**
@@ -32,6 +37,8 @@ public class SysLoginController extends BaseController
      */
     @Value("${shiro.rememberMe.enabled: false}")
     private boolean rememberMe;
+    
+
 
     @Autowired
     private ConfigService configService;
